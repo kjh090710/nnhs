@@ -6,9 +6,12 @@ from datetime import datetime
 from openpyxl import load_workbook
 
 app = Flask(__name__)
-DB_NAME = "students.db"
-STUDENTS_FILE = "students.json"
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_NAME = os.path.join(BASE_DIR, "students.db")
+STUDENTS_FILE = os.path.join(BASE_DIR, "students.json")
+
+_initialized = False
 
 def get_db():
     conn = sqlite3.connect(DB_NAME)
@@ -84,6 +87,15 @@ def init_db():
 
     students = load_students_from_json()
     sync_students_to_db(students)
+
+    def ensure_initialized():
+        global _initialized
+        if _initialized:
+            return
+        init_db()
+        _initialized = True
+
+    ensure_initialized()
 
 
 def normalize_header(value):
@@ -363,6 +375,7 @@ def delete_guidance(guidance_id):
         }
     })
 
+
+
 if __name__ == "__main__":
-    init_db()
     app.run(debug=True)
