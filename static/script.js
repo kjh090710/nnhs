@@ -202,6 +202,11 @@ async function renderStudentDetails(studentNumber) {
             <span class="detail-date">${item.created_at}</span>
           </div>
           <div class="detail-content">${item.content}</div>
+          <div class="detail-actions">
+            <button class="delete-btn" onclick="deleteGuidance(${item.id}, '${item.student_number}')">
+              삭제
+            </button>
+          </div>
         </div>
       `;
     });
@@ -243,6 +248,37 @@ async function uploadExcel() {
     }
   } catch (error) {
     showBox("uploadMessage", "엑셀 업로드 중 오류가 발생했습니다.", "error");
+  }
+}
+
+async function deleteGuidance(guidanceId, studentNumber) {
+  const ok = confirm("이 선도 기록을 삭제할까요?");
+  if (!ok) return;
+
+  try {
+    const response = await fetch(`/api/guidance/${guidanceId}`, {
+      method: "DELETE"
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      showBox("message", data.message, "error");
+      return;
+    }
+
+    await loadGuidanceSummary();
+
+    if (openedDetails.has(studentNumber)) {
+      const detailExists = document.getElementById(`detail-box-${studentNumber}`);
+      if (detailExists) {
+        await renderStudentDetails(studentNumber);
+      }
+    }
+
+    showBox("message", "선도 기록이 삭제되었습니다.", "success");
+  } catch (error) {
+    showBox("message", "선도 기록 삭제 중 오류가 발생했습니다.", "error");
   }
 }
 

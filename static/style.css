@@ -346,3 +346,24 @@ tbody tr:hover {
   color: #6b7280;
   padding: 6px 2px;
 }
+
+.detail-actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.delete-btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 10px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.delete-btn:hover {
+  background: #fecaca;
+}

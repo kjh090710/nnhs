@@ -186,7 +186,7 @@ def get_guidance_summary():
             ON s.student_number = g.student_number
         GROUP BY s.student_number, s.name
         HAVING COUNT(g.id) >= 1
-        ORDER BY s.student_number ASC
+        ORDER BY guidance_count ASC, s.student_number ASC
     """).fetchall()
 
     conn.close()
@@ -332,6 +332,36 @@ def upload_students_excel():
             "message": f"엑셀 처리 중 오류가 발생했습니다: {str(e)}"
         }), 500
 
+@app.route("/api/guidance/<int:guidance_id>", methods=["DELETE"])
+def delete_guidance(guidance_id):
+    conn = get_db()
+
+    guidance = conn.execute("""
+        SELECT id, student_number, student_name, content, created_at
+        FROM guidances
+        WHERE id = ?
+    """, (guidance_id,)).fetchone()
+
+    if not guidance:
+        conn.close()
+        return jsonify({
+            "success": False,
+            "message": "삭제할 선도 기록을 찾을 수 없습니다."
+        }), 404
+
+    conn.execute("DELETE FROM guidances WHERE id = ?", (guidance_id,))
+    conn.commit()
+    conn.close()
+
+    return jsonify({
+        "success": True,
+        "message": "선도 기록이 삭제되었습니다.",
+        "data": {
+            "id": guidance["id"],
+            "student_number": guidance["student_number"],
+            "student_name": guidance["student_name"]
+        }
+    })
 
 if __name__ == "__main__":
     init_db()
