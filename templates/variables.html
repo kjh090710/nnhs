@@ -1,0 +1,405 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+  .variable-page,
+  .variable-page * {
+    font-family:
+      "Malgun Gothic",
+      "맑은 고딕",
+      "Apple SD Gothic Neo",
+      "Noto Sans KR",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      sans-serif !important;
+    letter-spacing: normal !important;
+    word-spacing: normal !important;
+    word-break: keep-all !important;
+    overflow-wrap: break-word !important;
+    text-rendering: auto !important;
+  }
+
+  .variable-page {
+    --v-bg: rgba(255, 255, 255, 0.88);
+    --v-line: rgba(184, 194, 214, 0.46);
+    --v-text: #182032;
+    --v-muted: #6f7b8f;
+    --v-blue: #4969b8;
+    --v-blue-soft: rgba(73, 105, 184, 0.10);
+    --v-green: #4d9d8f;
+    --v-green-soft: rgba(77, 157, 143, 0.10);
+    --v-sand: #b98b63;
+    --v-sand-soft: rgba(185, 139, 99, 0.11);
+    --v-rose: #c96f78;
+    --v-rose-soft: rgba(201, 111, 120, 0.11);
+    --v-shadow: 0 16px 36px rgba(31, 45, 70, 0.065);
+
+    display: grid;
+    gap: 15px;
+  }
+
+  .v-card {
+    border-radius: 24px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,255,255,0.78));
+    border: 1px solid rgba(255,255,255,0.90);
+    box-shadow: var(--v-shadow);
+    backdrop-filter: blur(16px) saturate(132%);
+    -webkit-backdrop-filter: blur(16px) saturate(132%);
+    overflow: hidden;
+  }
+
+  .v-kicker {
+    margin: 0 0 6px;
+    color: var(--v-blue);
+    font-size: 11px;
+    line-height: 1.2;
+    font-weight: 850;
+    letter-spacing: 0.055em !important;
+    text-transform: uppercase;
+  }
+
+  .v-summary {
+    padding: 22px;
+  }
+
+  .v-summary-head {
+    margin-bottom: 16px;
+  }
+
+  .v-summary-head h2 {
+    margin: 0;
+    color: var(--v-text);
+    font-size: 22px;
+    line-height: 1.35;
+    font-weight: 800;
+  }
+
+  .v-summary-head p {
+    margin: 8px 0 0;
+    color: var(--v-muted);
+    font-size: 13px;
+    line-height: 1.65;
+  }
+
+  .v-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .v-stat {
+    min-height: 98px;
+    padding: 16px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.72);
+    border: 1px solid var(--v-line);
+  }
+
+  .v-stat-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 9px;
+  }
+
+  .v-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--v-blue);
+  }
+
+  .v-stat:nth-child(2) .v-dot {
+    background: var(--v-green);
+  }
+
+  .v-stat:nth-child(3) .v-dot {
+    background: var(--v-sand);
+  }
+
+  .v-stat:nth-child(4) .v-dot {
+    background: var(--v-rose);
+  }
+
+  .v-stat:nth-child(5) .v-dot {
+    background: var(--v-green);
+  }
+
+  .v-stat:nth-child(6) .v-dot {
+    background: var(--v-blue);
+  }
+
+  .v-stat-label {
+    color: var(--v-muted);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.35;
+  }
+
+  .v-stat-value {
+    display: block;
+    color: var(--v-text);
+    font-size: 19px;
+    line-height: 1.25;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .v-stat-desc {
+    margin-top: 6px;
+    color: var(--v-muted);
+    font-size: 12.5px;
+    line-height: 1.55;
+  }
+
+  .v-chart-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+  }
+
+  .v-panel {
+    padding: 22px;
+  }
+
+  .v-panel-head {
+    margin-bottom: 14px;
+  }
+
+  .v-panel-head h2 {
+    margin: 0;
+    color: var(--v-text);
+    font-size: 21px;
+    line-height: 1.35;
+    font-weight: 800;
+  }
+
+  .v-panel-head p {
+    margin: 8px 0 0;
+    color: var(--v-muted);
+    font-size: 13px;
+    line-height: 1.65;
+  }
+
+  .v-img-box {
+    padding: 12px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.72);
+    border: 1px solid var(--v-line);
+  }
+
+  .v-img-box img {
+    width: 100%;
+    min-height: 260px;
+    display: block;
+    object-fit: contain;
+    border-radius: 16px;
+    background: #fff;
+    border: 1px solid rgba(184, 194, 214, 0.36);
+  }
+
+  .v-missing-img {
+    min-height: 260px;
+    display: grid;
+    place-items: center;
+    gap: 8px;
+    text-align: center;
+    padding: 24px;
+    border-radius: 16px;
+    background: rgba(201, 111, 120, 0.08);
+    border: 1px solid rgba(201, 111, 120, 0.22);
+  }
+
+  .v-missing-img strong {
+    color: #9a4950;
+    font-size: 15px;
+    font-weight: 800;
+  }
+
+  .v-missing-img span {
+    color: #9a6970;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .v-interpret-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .v-note {
+    padding: 18px;
+  }
+
+  .v-note span {
+    display: inline-flex;
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: var(--v-blue-soft);
+    color: var(--v-blue);
+    font-size: 11.5px;
+    line-height: 1;
+    font-weight: 850;
+  }
+
+  .v-note:nth-child(2) span {
+    background: var(--v-green-soft);
+    color: var(--v-green);
+  }
+
+  .v-note:nth-child(3) span {
+    background: var(--v-sand-soft);
+    color: var(--v-sand);
+  }
+
+  .v-note h3 {
+    margin: 13px 0 7px;
+    color: var(--v-text);
+    font-size: 16px;
+    line-height: 1.35;
+    font-weight: 800;
+  }
+
+  .v-note p {
+    margin: 0;
+    color: var(--v-muted);
+    font-size: 13px;
+    line-height: 1.65;
+  }
+
+  @media (max-width: 1200px) {
+    .v-stat-grid,
+    .v-chart-grid,
+    .v-interpret-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .v-summary,
+    .v-panel,
+    .v-note {
+      padding: 18px;
+      border-radius: 21px;
+    }
+
+    .v-summary-head h2,
+    .v-panel-head h2 {
+      font-size: 20px;
+    }
+
+    .v-stat-value {
+      font-size: 17px;
+    }
+  }
+</style>
+
+<div class="variable-page">
+  <section class="v-card v-summary">
+    <div class="v-summary-head">
+      <p class="v-kicker">Variable summary</p>
+      <h2>주요 변수 평균값</h2>
+      <p>오존 농도 예측에 사용한 주요 기상·대기오염 변수의 대표값입니다.</p>
+    </div>
+
+    <div class="v-stat-grid">
+      <article class="v-stat">
+        <div class="v-stat-top">
+          <span class="v-dot"></span>
+          <span class="v-stat-label">기온 평균</span>
+        </div>
+        <strong class="v-stat-value">{{ '%.1f'|format(summary.metrics.mean_temp) }}℃</strong>
+        <div class="v-stat-desc">여름철 전체 평균 기온</div>
+      </article>
+
+      <article class="v-stat">
+        <div class="v-stat-top">
+          <span class="v-dot"></span>
+          <span class="v-stat-label">습도 평균</span>
+        </div>
+        <strong class="v-stat-value">{{ '%.1f'|format(summary.metrics.mean_humidity) }}%</strong>
+        <div class="v-stat-desc">상대습도 기준</div>
+      </article>
+
+      <article class="v-stat">
+        <div class="v-stat-top">
+          <span class="v-dot"></span>
+          <span class="v-stat-label">NO₂ 평균</span>
+        </div>
+        <strong class="v-stat-value">{{ '%.4f'|format(summary.metrics.mean_NO2) }} ppm</strong>
+        <div class="v-stat-desc">대기오염 변수</div>
+      </article>
+
+      <article class="v-stat">
+        <div class="v-stat-top">
+          <span class="v-dot"></span>
+          <span class="v-stat-label">PM2.5 평균</span>
+        </div>
+        <strong class="v-stat-value">{{ '%.1f'|format(summary.metrics.mean_PM25) }}</strong>
+        <div class="v-stat-desc">미세먼지</div>
+      </article>
+
+      <article class="v-stat">
+        <div class="v-stat-top">
+          <span class="v-dot"></span>
+          <span class="v-stat-label">PM10 평균</span>
+        </div>
+        <strong class="v-stat-value">{{ '%.1f'|format(summary.metrics.mean_PM10) }}</strong>
+        <div class="v-stat-desc">미세먼지</div>
+      </article>
+
+      <article class="v-stat">
+        <div class="v-stat-top">
+          <span class="v-dot"></span>
+          <span class="v-stat-label">O₃ 최대값</span>
+        </div>
+        <strong class="v-stat-value">{{ '%.4f'|format(summary.metrics.max_O3) }} ppm</strong>
+        <div class="v-stat-desc">분석 데이터 내 최대값</div>
+      </article>
+    </div>
+  </section>
+
+  <section class="v-chart-grid">
+    <article class="v-card v-panel">
+      <div class="v-panel-head">
+        <p class="v-kicker">Temperature</p>
+        <h2>기온과 오존 농도</h2>
+        <p>기온이 높아질수록 오존 농도가 증가하는 경향이 나타납니다.</p>
+      </div>
+
+      <div class="v-img-box">
+        {% if variable_images.temp_o3 %}
+          <img src="{{ url_for('static', filename=variable_images.temp_o3) }}" alt="기온과 오존 농도 산점도">
+        {% else %}
+          <div class="v-missing-img">
+            <strong>기온-오존 그래프를 찾지 못했습니다.</strong>
+            <span>static/img 폴더 안에 파일명에 temp 또는 temperature, 그리고 o3가 들어간 이미지가 있는지 확인해 주세요.</span>
+          </div>
+        {% endif %}
+      </div>
+    </article>
+
+    <article class="v-card v-panel">
+      <div class="v-panel-head">
+        <p class="v-kicker">NO₂</p>
+        <h2>NO₂와 오존 농도</h2>
+        <p>NO₂와 오존은 단순 선형 관계보다 시간대와 광합성 반응의 영향을 함께 받습니다.</p>
+      </div>
+
+      <div class="v-img-box">
+        {% if variable_images.no2_o3 %}
+          <img src="{{ url_for('static', filename=variable_images.no2_o3) }}" alt="NO₂와 오존 농도 산점도">
+        {% else %}
+          <div class="v-missing-img">
+            <strong>NO₂-오존 그래프를 찾지 못했습니다.</strong>
+            <span>static/img 폴더 안에 파일명에 no2와 o3가 들어간 이미지가 있는지 확인해 주세요.</span>
+          </div>
+        {% endif %}
+      </div>
+    </article>
+  </section>
+</div>
+
+{% endblock %}

@@ -1,0 +1,429 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+  .data-page,
+  .data-page * {
+    font-family:
+      "Malgun Gothic",
+      "맑은 고딕",
+      "Apple SD Gothic Neo",
+      "Noto Sans KR",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      sans-serif !important;
+    letter-spacing: normal !important;
+    word-spacing: normal !important;
+    word-break: keep-all !important;
+    overflow-wrap: break-word !important;
+    text-rendering: auto !important;
+  }
+
+  .data-page {
+    --data-bg: rgba(255,255,255,0.86);
+    --data-bg-strong: rgba(255,255,255,0.95);
+    --data-line: rgba(184,194,214,0.46);
+    --data-text: #182032;
+    --data-muted: #6f7b8f;
+    --data-blue: #5575d9;
+    --data-blue-soft: rgba(85,117,217,0.10);
+    --data-teal: #5aa99b;
+    --data-teal-soft: rgba(90,169,155,0.10);
+    --data-orange: #c99367;
+    --data-orange-soft: rgba(201,147,103,0.11);
+    --data-shadow: 0 18px 42px rgba(35,48,78,0.075);
+
+    display: grid;
+    gap: 16px;
+  }
+
+  .data-card {
+    background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,255,255,0.78));
+    border: 1px solid rgba(255,255,255,0.90);
+    border-radius: 28px;
+    box-shadow: var(--data-shadow);
+    backdrop-filter: blur(16px) saturate(135%);
+    -webkit-backdrop-filter: blur(16px) saturate(135%);
+    overflow: hidden;
+  }
+
+  .data-kicker {
+    margin: 0 0 8px;
+    color: var(--data-blue);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase;
+  }
+
+  .data-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 0.9fr);
+    gap: 16px;
+  }
+
+  .data-panel {
+    padding: 26px;
+  }
+
+  .data-panel h2 {
+    margin: 0;
+    color: var(--data-text);
+    font-size: 25px;
+    line-height: 1.35;
+    font-weight: 800;
+  }
+
+  .data-panel p {
+    margin: 10px 0 0;
+    color: var(--data-muted);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .info-list {
+    display: grid;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .info-row {
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr);
+    gap: 14px;
+    align-items: start;
+    padding: 14px 15px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.72);
+    border: 1px solid var(--data-line);
+  }
+
+  .info-row span {
+    color: var(--data-muted);
+    font-size: 13px;
+    line-height: 1.5;
+    font-weight: 800;
+  }
+
+  .info-row strong {
+    color: var(--data-text);
+    font-size: 15px;
+    line-height: 1.55;
+    font-weight: 800;
+  }
+
+  .download-grid {
+    display: grid;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .download-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: center;
+    padding: 15px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.72);
+    border: 1px solid var(--data-line);
+    transition: 0.18s ease;
+  }
+
+  .download-item:hover {
+    transform: translateY(-2px);
+    background: #fff;
+    box-shadow: 0 12px 26px rgba(35,48,78,0.07);
+  }
+
+  .download-name {
+    min-width: 0;
+  }
+
+  .download-name strong {
+    display: block;
+    color: var(--data-text);
+    font-size: 15px;
+    line-height: 1.45;
+    font-weight: 800;
+  }
+
+  .download-name span {
+    display: block;
+    margin-top: 4px;
+    color: var(--data-muted);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .download-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 0 13px;
+    border-radius: 999px;
+    background: var(--data-blue-soft);
+    color: var(--data-blue);
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .station-panel {
+    padding: 26px;
+  }
+
+  .station-panel h2 {
+    margin: 0;
+    color: var(--data-text);
+    font-size: 25px;
+    line-height: 1.35;
+    font-weight: 800;
+  }
+
+  .station-panel p {
+    margin: 10px 0 0;
+    color: var(--data-muted);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .station-count {
+    display: inline-flex;
+    margin-top: 14px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: var(--data-teal-soft);
+    color: var(--data-teal);
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .station-chip-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-top: 18px;
+  }
+
+  .station-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 0 12px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.76);
+    border: 1px solid var(--data-line);
+    color: #3c4a60;
+    font-size: 13px;
+    font-weight: 750;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .data-note-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .data-note {
+    padding: 20px;
+  }
+
+  .data-note span {
+    display: inline-flex;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--data-blue-soft);
+    color: var(--data-blue);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .data-note:nth-child(2) span {
+    background: var(--data-teal-soft);
+    color: var(--data-teal);
+  }
+
+  .data-note:nth-child(3) span {
+    background: var(--data-orange-soft);
+    color: var(--data-orange);
+  }
+
+  .data-note h3 {
+    margin: 13px 0 7px;
+    color: var(--data-text);
+    font-size: 18px;
+    line-height: 1.35;
+    font-weight: 800;
+  }
+
+  .data-note p {
+    margin: 0;
+    color: var(--data-muted);
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  @media (max-width: 1200px) {
+    .data-grid,
+    .data-note-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .data-panel,
+    .station-panel,
+    .data-note {
+      padding: 18px;
+      border-radius: 22px;
+    }
+
+    .info-row {
+      grid-template-columns: 1fr;
+      gap: 5px;
+    }
+
+    .download-item {
+      grid-template-columns: 1fr;
+    }
+
+    .download-btn {
+      width: fit-content;
+    }
+  }
+</style>
+
+<div class="data-page">
+  <section class="data-grid">
+    <article class="data-card data-panel">
+      <p class="data-kicker">Dataset</p>
+      <h2>데이터 개요</h2>
+      <p>분석에 사용한 서울 여름철 오존 데이터의 기준 정보입니다.</p>
+
+      <div class="info-list">
+        <div class="info-row">
+          <span>분석 지역</span>
+          <strong>서울특별시</strong>
+        </div>
+
+        <div class="info-row">
+          <span>분석 기간</span>
+          <strong>{{ summary.dataset.date_start }} ~ {{ summary.dataset.date_end }}</strong>
+        </div>
+
+        <div class="info-row">
+          <span>대상 월</span>
+          <strong>6월, 7월, 8월</strong>
+        </div>
+
+        <div class="info-row">
+          <span>데이터 행 수</span>
+          <strong>{{ summary.dataset.rows|num }}개</strong>
+        </div>
+
+        <div class="info-row">
+          <span>전체 변수 수</span>
+          <strong>{{ summary.dataset.features }}개</strong>
+        </div>
+
+        <div class="info-row">
+          <span>측정 지점 수</span>
+          <strong>{{ summary.dataset.station_count }}개</strong>
+        </div>
+      </div>
+    </article>
+
+    <article class="data-card data-panel">
+      <p class="data-kicker">Download</p>
+      <h2>파일 다운로드</h2>
+      <p>웹에서 사용한 요약 파일과 모델 성능표를 내려받을 수 있습니다.</p>
+
+      <div class="download-grid">
+        <a class="download-item" href="{{ url_for('download_file', filename='summary.json') }}">
+          <span class="download-name">
+            <strong>summary.json</strong>
+            <span>웹 화면에 표시되는 주요 요약 정보</span>
+          </span>
+          <span class="download-btn">다운로드</span>
+        </a>
+
+        <a class="download-item" href="{{ url_for('download_file', filename='model_performance.csv') }}">
+          <span class="download-name">
+            <strong>model_performance.csv</strong>
+            <span>모델별 R², MAE, RMSE 성능 비교표</span>
+          </span>
+          <span class="download-btn">다운로드</span>
+        </a>
+
+        <a class="download-item" href="{{ url_for('download_file', filename='predictions_sample.csv') }}">
+          <span class="download-name">
+            <strong>predictions_sample.csv</strong>
+            <span>예측값과 실제값 비교 샘플 데이터</span>
+          </span>
+          <span class="download-btn">다운로드</span>
+        </a>
+      </div>
+    </article>
+  </section>
+
+  <section class="data-card station-panel">
+    <p class="data-kicker">Stations</p>
+    <h2>측정 지점 목록</h2>
+    <p>분석에 포함된 서울 권역 대기 측정소 목록입니다.</p>
+    <span class="station-count">총 {{ summary.dataset.station_count }}개 측정 지점</span>
+
+    <div class="station-chip-grid">
+      <span class="station-chip">강남구</span>
+      <span class="station-chip">강남대로</span>
+      <span class="station-chip">강동구</span>
+      <span class="station-chip">강변북로</span>
+      <span class="station-chip">강북구</span>
+      <span class="station-chip">강서구</span>
+      <span class="station-chip">공항대로</span>
+      <span class="station-chip">관악구</span>
+      <span class="station-chip">광진구</span>
+      <span class="station-chip">구로구</span>
+      <span class="station-chip">금천구</span>
+      <span class="station-chip">길동</span>
+      <span class="station-chip">내부순환로</span>
+      <span class="station-chip">노원구</span>
+      <span class="station-chip">도봉구</span>
+      <span class="station-chip">도산대로</span>
+      <span class="station-chip">동대문구</span>
+      <span class="station-chip">동작구</span>
+      <span class="station-chip">동작대로</span>
+      <span class="station-chip">마포구</span>
+      <span class="station-chip">서대문구</span>
+      <span class="station-chip">서초구</span>
+      <span class="station-chip">성동구</span>
+      <span class="station-chip">성북구</span>
+      <span class="station-chip">송파구</span>
+      <span class="station-chip">시흥대로</span>
+      <span class="station-chip">신촌로</span>
+      <span class="station-chip">양천구</span>
+      <span class="station-chip">영등포구</span>
+      <span class="station-chip">영등포로</span>
+      <span class="station-chip">용산구</span>
+      <span class="station-chip">은평구</span>
+      <span class="station-chip">정릉로</span>
+      <span class="station-chip">종로</span>
+      <span class="station-chip">종로구</span>
+      <span class="station-chip">중구</span>
+      <span class="station-chip">중랑구</span>
+      <span class="station-chip">천호대로</span>
+      <span class="station-chip">청계천로</span>
+      <span class="station-chip">청량리</span>
+      <span class="station-chip">한강대로</span>
+      <span class="station-chip">홍릉로</span>
+      <span class="station-chip">화랑로</span>
+    </div>
+  </section>
+</div>
+
+{% endblock %}

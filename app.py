@@ -1,381 +1,571 @@
-from flask import Flask, render_template, request, jsonify
-import sqlite3
+from flask import Flask, render_template, send_from_directory, jsonify, request
+from pathlib import Path
 import json
-import os
-from datetime import datetime
-from openpyxl import load_workbook
+import csv
+import math
 
 app = Flask(__name__)
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_NAME = os.path.join(BASE_DIR, "students.db")
-STUDENTS_FILE = os.path.join(BASE_DIR, "students.json")
+BASE_DIR = Path(__file__).resolve().parent
+STATIC_DIR = BASE_DIR / "static"
+IMG_DIR = STATIC_DIR / "img"
 
-_initialized = False
-
-def get_db():
-    conn = sqlite3.connect(DB_NAME)
-    conn.row_factory = sqlite3.Row
-    return conn
-
-
-def make_student_number(grade, class_no, student_no):
-    return f"{int(grade)}{int(class_no):02d}{int(student_no):02d}"
+DATA_DIR_CANDIDATES = [
+    BASE_DIR / "data",
+    BASE_DIR / "data" / "processed",
+    BASE_DIR / "data" / "raw",
+    BASE_DIR / "static" / "data",
+    BASE_DIR
+]
 
 
-def load_students_from_json():
-    if not os.path.exists(STUDENTS_FILE):
-        sample_students = [
-        ]
-        with open(STUDENTS_FILE, "w", encoding="utf-8") as f:
-            json.dump(sample_students, f, ensure_ascii=False, indent=2)
+# =========================================================
+# 기본 요약값
+# summary.json이 없거나 일부 값이 비어 있어도 웹이 깨지지 않게 함
+# =========================================================
 
-    with open(STUDENTS_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-
-def save_students_to_json(students):
-    with open(STUDENTS_FILE, "w", encoding="utf-8") as f:
-        json.dump(students, f, ensure_ascii=False, indent=2)
-
-
-def sync_students_to_db(students):
-    conn = get_db()
-    cur = conn.cursor()
-
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS students (
-            student_number TEXT PRIMARY KEY,
-            name TEXT NOT NULL
-        )
-    """)
-
-    for student in students:
-        cur.execute("""
-            INSERT OR REPLACE INTO students (student_number, name)
-            VALUES (?, ?)
-        """, (student["student_number"], student["name"]))
-
-    conn.commit()
-    conn.close()
-
-
-def init_db():
-    conn = get_db()
-    cur = conn.cursor()
-
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS students (
-            student_number TEXT PRIMARY KEY,
-            name TEXT NOT NULL
-        )
-    """)
-
-    # 기존 벌점 개념 제거 → 선도 기록 테이블
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS guidances (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            student_number TEXT NOT NULL,
-            student_name TEXT NOT NULL,
-            content TEXT NOT NULL,
-            created_at TEXT NOT NULL
-        )
-    """)
-
-    conn.commit()
-    conn.close()
-
-    students = load_students_from_json()
-    sync_students_to_db(students)
-
-    def ensure_initialized():
-        global _initialized
-        if _initialized:
-            return
-        init_db()
-        _initialized = True
-
-    ensure_initialized()
-
-
-def normalize_header(value):
-    if value is None:
-        return ""
-    return str(value).strip().lower()
-
-
-def find_column_index(headers, candidates):
-    normalized_headers = [normalize_header(h) for h in headers]
-    for i, header in enumerate(normalized_headers):
-        if header in candidates:
-            return i
-    return -1
-
-
-@app.route("/")
-def home():
-    return render_template("index.html")
-
-
-@app.route("/api/student/<student_number>", methods=["GET"])
-def get_student(student_number):
-    conn = get_db()
-    student = conn.execute(
-        "SELECT * FROM students WHERE student_number = ?",
-        (student_number,)
-    ).fetchone()
-    conn.close()
-
-    if student:
-        return jsonify({
-            "success": True,
-            "student_number": student["student_number"],
-            "name": student["name"]
-        })
-
-    return jsonify({
-        "success": False,
-        "message": "해당 학번의 학생을 찾을 수 없습니다."
-    }), 404
-
-
-@app.route("/api/guidance", methods=["POST"])
-def add_guidance():
-    data = request.get_json()
-
-    student_number = str(data.get("student_number", "")).strip()
-    content = str(data.get("content", "")).strip()
-
-    if not student_number:
-        return jsonify({"success": False, "message": "학번을 입력하세요."}), 400
-
-    if not content:
-        return jsonify({"success": False, "message": "선도 내용을 입력하세요."}), 400
-
-    conn = get_db()
-    student = conn.execute(
-        "SELECT * FROM students WHERE student_number = ?",
-        (student_number,)
-    ).fetchone()
-
-    if not student:
-        conn.close()
-        return jsonify({"success": False, "message": "학생이 존재하지 않습니다."}), 404
-
-    student_name = student["name"]
-    created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    conn.execute("""
-        INSERT INTO guidances (student_number, student_name, content, created_at)
-        VALUES (?, ?, ?, ?)
-    """, (student_number, student_name, content, created_at))
-
-    conn.commit()
-    conn.close()
-
-    return jsonify({
-        "success": True,
-        "message": "선도 내용이 저장되었습니다.",
-        "data": {
-            "student_number": student_number,
-            "student_name": student_name,
-            "content": content,
-            "created_at": created_at
+DEFAULT_SUMMARY = {
+    "dataset": {
+        "city": "서울특별시",
+        "date_start": "2010-06-01",
+        "date_end": "2025-08-31",
+        "months": "6월, 7월, 8월",
+        "rows": 1354453,
+        "features": 65,
+        "station_count": 46
+    },
+    "metrics": {
+        "mean_O3": 0.0290,
+        "max_O3": 0.2274,
+        "mean_temp": 25.6,
+        "mean_humidity": 70.8,
+        "mean_NO2": 0.0260,
+        "mean_PM25": 17.0,
+        "mean_PM10": 31.7
+    },
+    "modeling": {
+        "best_model": "HistGradientBoosting Regression",
+        "best_R2": 0.721,
+        "best_MAE": 0.0085,
+        "best_RMSE": 0.0113
+    },
+    "findings": [
+        {
+            "title": "오후 시간대 오존 증가",
+            "value": "15~16시",
+            "body": "시간대 평균 그래프에서 오후 15~16시 부근의 오존 농도가 가장 높게 나타났습니다."
+        },
+        {
+            "title": "기온과 오존의 양의 관계",
+            "value": "+",
+            "body": "기온이 높을수록 오존 농도가 증가하는 경향이 나타났습니다."
+        },
+        {
+            "title": "습도와 오존의 음의 관계",
+            "value": "-",
+            "body": "습도가 높을수록 오존 농도가 낮아지는 경향이 확인되었습니다."
+        },
+        {
+            "title": "비선형 모델의 우수성",
+            "value": "R² 0.721",
+            "body": "HistGradientBoosting Regression이 가장 높은 설명력을 보였습니다."
         }
-    })
-
-@app.route("/api/guidance-summary", methods=["GET"])
-def get_guidance_summary():
-    conn = get_db()
-
-    rows = conn.execute("""
-        SELECT
-            s.student_number,
-            s.name AS student_name,
-            COUNT(g.id) AS guidance_count
-        FROM students s
-        INNER JOIN guidances g
-            ON s.student_number = g.student_number
-        GROUP BY s.student_number, s.name
-        HAVING COUNT(g.id) >= 1
-        ORDER BY guidance_count ASC, s.student_number ASC
-    """).fetchall()
-
-    conn.close()
-
-    result = []
-    for row in rows:
-        result.append({
-            "student_number": row["student_number"],
-            "student_name": row["student_name"],
-            "guidance_count": row["guidance_count"]
-        })
-
-    return jsonify({
-        "success": True,
-        "students": result
-    })
-
-@app.route("/api/student-guidances/<student_number>", methods=["GET"])
-def get_student_guidances(student_number):
-    conn = get_db()
-
-    student = conn.execute(
-        "SELECT * FROM students WHERE student_number = ?",
-        (student_number,)
-    ).fetchone()
-
-    if not student:
-        conn.close()
-        return jsonify({
-            "success": False,
-            "message": "해당 학번의 학생을 찾을 수 없습니다."
-        }), 404
-
-    rows = conn.execute("""
-        SELECT id, student_number, student_name, content, created_at
-        FROM guidances
-        WHERE student_number = ?
-        ORDER BY id DESC
-    """, (student_number,)).fetchall()
-
-    conn.close()
-
-    guidances = []
-    for row in rows:
-        guidances.append({
-            "id": row["id"],
-            "student_number": row["student_number"],
-            "student_name": row["student_name"],
-            "content": row["content"],
-            "created_at": row["created_at"]
-        })
-
-    return jsonify({
-        "success": True,
-        "student_number": student["student_number"],
-        "student_name": student["name"],
-        "guidance_count": len(guidances),
-        "guidances": guidances
-    })
+    ]
+}
 
 
-@app.route("/api/upload-students-excel", methods=["POST"])
-def upload_students_excel():
-    if "file" not in request.files:
-        return jsonify({"success": False, "message": "파일이 없습니다."}), 400
+DEFAULT_MODELS = [
+    {
+        "Model": "HistGradientBoosting Regression",
+        "R2": 0.721,
+        "MAE": 0.0085,
+        "RMSE": 0.0113,
+        "sample_rows": 50000,
+        "features_used": 13
+    },
+    {
+        "Model": "Polynomial Ridge degree=2",
+        "R2": 0.653,
+        "MAE": 0.0096,
+        "RMSE": 0.0126,
+        "sample_rows": 50000,
+        "features_used": 10
+    },
+    {
+        "Model": "Ridge Regression",
+        "R2": 0.578,
+        "MAE": 0.0107,
+        "RMSE": 0.0139,
+        "sample_rows": 50000,
+        "features_used": 59
+    },
+    {
+        "Model": "Multiple Linear Regression",
+        "R2": 0.578,
+        "MAE": 0.0107,
+        "RMSE": 0.0139,
+        "sample_rows": 50000,
+        "features_used": 59
+    },
+    {
+        "Model": "SGD ElasticNet Regression",
+        "R2": 0.572,
+        "MAE": 0.0108,
+        "RMSE": 0.0140,
+        "sample_rows": 50000,
+        "features_used": 59
+    }
+]
 
-    file = request.files["file"]
 
-    if file.filename == "":
-        return jsonify({"success": False, "message": "선택된 파일이 없습니다."}), 400
+# =========================================================
+# 유틸 함수
+# =========================================================
 
-    if not file.filename.lower().endswith(".xlsx"):
-        return jsonify({"success": False, "message": ".xlsx 파일만 업로드 가능합니다."}), 400
+def deep_merge(base, incoming):
+    result = dict(base)
+
+    for key, value in incoming.items():
+        if (
+            key in result
+            and isinstance(result[key], dict)
+            and isinstance(value, dict)
+        ):
+            result[key] = deep_merge(result[key], value)
+        else:
+            result[key] = value
+
+    return result
+
+
+def find_data_file(filename):
+    for folder in DATA_DIR_CANDIDATES:
+        candidate = folder / filename
+        if candidate.exists():
+            return candidate
+
+    for candidate in BASE_DIR.rglob(filename):
+        if ".venv" not in candidate.parts and "__pycache__" not in candidate.parts:
+            return candidate
+
+    return None
+
+
+def load_summary():
+    summary_path = find_data_file("summary.json")
+
+    if not summary_path:
+        return DEFAULT_SUMMARY
 
     try:
-        workbook = load_workbook(file, data_only=True)
-        sheet = workbook.active
-        rows = list(sheet.iter_rows(values_only=True))
+        with open(summary_path, "r", encoding="utf-8") as f:
+            loaded = json.load(f)
+
+        if not isinstance(loaded, dict):
+            return DEFAULT_SUMMARY
+
+        return deep_merge(DEFAULT_SUMMARY, loaded)
+
+    except Exception:
+        return DEFAULT_SUMMARY
+
+
+def to_float(value, default=0.0):
+    try:
+        if value is None or value == "":
+            return default
+        return float(value)
+    except Exception:
+        return default
+
+
+def to_int(value, default=0):
+    try:
+        if value is None or value == "":
+            return default
+        return int(float(value))
+    except Exception:
+        return default
+
+
+def normalize_model_row(row):
+    model_name = (
+        row.get("Model")
+        or row.get("model")
+        or row.get("모델")
+        or row.get("name")
+        or row.get("Name")
+        or "모델명 없음"
+    )
+
+    r2_value = (
+        row.get("R2")
+        or row.get("R²")
+        or row.get("r2")
+        or row.get("r_squared")
+        or row.get("R_squared")
+        or 0
+    )
+
+    return {
+        "Model": model_name,
+        "R2": to_float(r2_value),
+        "MAE": to_float(row.get("MAE") or row.get("mae")),
+        "RMSE": to_float(row.get("RMSE") or row.get("rmse")),
+        "sample_rows": to_int(row.get("sample_rows") or row.get("Sample Rows") or row.get("표본 수"), 50000),
+        "features_used": to_int(row.get("features_used") or row.get("Features Used") or row.get("사용 변수 수"), 0)
+    }
+
+
+def load_models():
+    model_path = find_data_file("model_performance.csv")
+
+    if not model_path:
+        return DEFAULT_MODELS
+
+    try:
+        rows = []
+
+        with open(model_path, "r", encoding="utf-8-sig", newline="") as f:
+            reader = csv.DictReader(f)
+
+            for row in reader:
+                rows.append(normalize_model_row(row))
 
         if not rows:
-            return jsonify({"success": False, "message": "엑셀 파일이 비어 있습니다."}), 400
+            return DEFAULT_MODELS
 
-        headers = rows[0]
+        rows.sort(key=lambda x: x["R2"], reverse=True)
+        return rows
 
-        grade_idx = find_column_index(headers, {"학년", "grade"})
-        class_idx = find_column_index(headers, {"반", "class", "class_no", "class number"})
-        student_idx = find_column_index(headers, {"번호", "num", "number", "student_no", "student number"})
-        name_idx = find_column_index(headers, {"이름", "name", "학생명"})
+    except Exception:
+        return DEFAULT_MODELS
 
-        if grade_idx == -1 or class_idx == -1 or student_idx == -1 or name_idx == -1:
-            return jsonify({
-                "success": False,
-                "message": "엑셀 첫 행에 '학년', '반', '번호', '이름' 열이 있어야 합니다."
-            }), 400
 
-        student_map = {}
+def normalize_filename_text(text):
+    return (
+        str(text)
+        .lower()
+        .replace("₂", "2")
+        .replace("₃", "3")
+        .replace("-", "_")
+        .replace(" ", "_")
+    )
 
-        for row in rows[1:]:
-            if not row:
-                continue
 
-            try:
-                grade = row[grade_idx] if len(row) > grade_idx else None
-                class_no = row[class_idx] if len(row) > class_idx else None
-                student_no = row[student_idx] if len(row) > student_idx else None
-                name = row[name_idx] if len(row) > name_idx else None
+def find_img_by_keywords(*keywords):
+    """
+    static/img 폴더에서 파일명에 keywords가 모두 들어간 이미지를 자동 탐색.
+    Render는 대소문자를 구분하므로 서버에서 직접 파일명을 찾아 넘긴다.
+    """
+    if not IMG_DIR.exists():
+        return None
 
-                if grade is None or class_no is None or student_no is None or name is None:
-                    continue
+    image_files = []
+    for ext in ("*.png", "*.jpg", "*.jpeg", "*.webp"):
+        image_files.extend(IMG_DIR.glob(ext))
 
-                name = str(name).strip()
-                if not name:
-                    continue
+    normalized_keywords = [normalize_filename_text(k) for k in keywords]
 
-                student_number = make_student_number(grade, class_no, student_no)
+    for file in sorted(image_files):
+        name = normalize_filename_text(file.name)
 
-                # 같은 학생은 1번만 유지
-                student_map[student_number] = {
-                    "student_number": student_number,
-                    "name": name
-                }
+        if all(keyword in name for keyword in normalized_keywords):
+            return f"img/{file.name}"
 
-            except Exception:
-                continue
+    return None
 
-        students = list(student_map.values())
-        students.sort(key=lambda x: x["student_number"])
 
-        if not students:
-            return jsonify({"success": False, "message": "유효한 학생 데이터가 없습니다."}), 400
+def find_img_by_any_keyword_sets(keyword_sets):
+    for keywords in keyword_sets:
+        found = find_img_by_keywords(*keywords)
+        if found:
+            return found
+    return None
 
-        save_students_to_json(students)
-        sync_students_to_db(students)
 
-        return jsonify({
-            "success": True,
-            "message": f"{len(students)}명의 학생 정보가 저장되었습니다."
-        })
+def get_variable_images():
+    temp_img = find_img_by_any_keyword_sets([
+        ("02", "temp", "o3"),
+        ("02", "temperature", "o3"),
+        ("temp", "o3"),
+        ("temperature", "o3"),
+        ("temp", "ozone"),
+        ("temperature", "ozone"),
+        ("기온", "오존"),
+    ])
 
-    except Exception as e:
-        return jsonify({
-            "success": False,
-            "message": f"엑셀 처리 중 오류가 발생했습니다: {str(e)}"
-        }), 500
+    no2_img = find_img_by_any_keyword_sets([
+        ("03", "no2", "o3"),
+        ("03", "no2", "ozone"),
+        ("no2", "o3"),
+        ("no2", "ozone"),
+        ("NO2", "O3"),
+        ("NO2", "ozone"),
+        ("이산화질소", "오존"),
+    ])
 
-@app.route("/api/guidance/<int:guidance_id>", methods=["DELETE"])
-def delete_guidance(guidance_id):
-    conn = get_db()
+    return {
+        "temp_o3": temp_img,
+        "no2_o3": no2_img
+    }
 
-    guidance = conn.execute("""
-        SELECT id, student_number, student_name, content, created_at
-        FROM guidances
-        WHERE id = ?
-    """, (guidance_id,)).fetchone()
 
-    if not guidance:
-        conn.close()
-        return jsonify({
-            "success": False,
-            "message": "삭제할 선도 기록을 찾을 수 없습니다."
-        }), 404
+def get_standard_images():
+    return {
+        "correlation": find_img_by_any_keyword_sets([
+            ("01", "correlation"),
+            ("correlation", "heatmap"),
+            ("상관", "히트맵")
+        ]),
+        "hourly": find_img_by_any_keyword_sets([
+            ("04", "hourly"),
+            ("hour", "mean", "o3"),
+            ("hourly", "o3")
+        ]),
+        "monthly": find_img_by_any_keyword_sets([
+            ("05", "monthly"),
+            ("month", "mean", "o3"),
+            ("monthly", "o3")
+        ]),
+        "yearly": find_img_by_any_keyword_sets([
+            ("06", "yearly"),
+            ("year", "mean", "o3"),
+            ("yearly", "o3")
+        ]),
+        "hour_month": find_img_by_any_keyword_sets([
+            ("07", "hour", "month"),
+            ("hour", "month", "heatmap"),
+            ("hour_month", "o3")
+        ]),
+        "r2": find_img_by_any_keyword_sets([
+            ("08", "r2"),
+            ("model", "r2"),
+            ("comparison", "r2")
+        ]),
+        "rmse": find_img_by_any_keyword_sets([
+            ("09", "rmse"),
+            ("model", "rmse"),
+            ("comparison", "rmse")
+        ]),
+        "actual_predicted": find_img_by_any_keyword_sets([
+            ("actual", "predicted"),
+            ("prediction", "actual"),
+            ("10", "actual")
+        ]),
+        "residual_plot": find_img_by_any_keyword_sets([
+            ("residual", "plot"),
+            ("11", "residual")
+        ]),
+        "residual_distribution": find_img_by_any_keyword_sets([
+            ("residual", "distribution"),
+            ("12", "residual")
+        ])
+    }
 
-    conn.execute("DELETE FROM guidances WHERE id = ?", (guidance_id,))
-    conn.commit()
-    conn.close()
+
+summary = load_summary()
+models = load_models()
+
+
+# =========================================================
+# Jinja 필터
+# =========================================================
+
+@app.template_filter("ppm")
+def ppm_filter(value):
+    try:
+        return f"{float(value):.4f} ppm"
+    except Exception:
+        return "0.0000 ppm"
+
+
+@app.template_filter("num")
+def num_filter(value):
+    try:
+        return f"{int(float(value)):,}"
+    except Exception:
+        return str(value)
+
+
+# =========================================================
+# 페이지 라우트
+# =========================================================
+
+@app.route("/")
+@app.route("/overview")
+def overview():
+    return render_template(
+        "overview.html",
+        page_title="대시보드",
+        active_page="overview",
+        summary=summary,
+        images=get_standard_images()
+    )
+
+
+@app.route("/correlation")
+def correlation():
+    return render_template(
+        "correlation.html",
+        page_title="상관관계 분석",
+        active_page="correlation",
+        summary=summary,
+        images=get_standard_images()
+    )
+
+
+@app.route("/variables")
+def variables():
+    return render_template(
+        "variables.html",
+        page_title="변수별 분석",
+        active_page="variables",
+        summary=summary,
+        variable_images=get_variable_images()
+    )
+
+
+@app.route("/time")
+def time_analysis():
+    return render_template(
+        "time.html",
+        page_title="시간대 분석",
+        active_page="time",
+        summary=summary,
+        images=get_standard_images()
+    )
+
+
+@app.route("/models")
+def model_page():
+    return render_template(
+        "models.html",
+        page_title="모델링 결과",
+        active_page="models",
+        summary=summary,
+        models=models,
+        images=get_standard_images()
+    )
+
+
+@app.route("/prediction")
+def prediction():
+    return render_template(
+        "prediction.html",
+        page_title="예측 및 평가",
+        active_page="prediction",
+        summary=summary,
+        images=get_standard_images()
+    )
+
+
+@app.route("/data")
+def data_page():
+    return render_template(
+        "data.html",
+        page_title="데이터 정보",
+        active_page="data",
+        summary=summary
+    )
+
+
+@app.route("/about")
+def about():
+    return render_template(
+        "about.html",
+        page_title="소개",
+        active_page="about",
+        summary=summary
+    )
+
+
+# =========================================================
+# 간단 예측 API
+# prediction.html에서 필요할 경우 사용 가능
+# =========================================================
+
+@app.route("/api/predict", methods=["GET", "POST"])
+def api_predict():
+    if request.method == "POST":
+        payload = request.get_json(silent=True) or {}
+    else:
+        payload = request.args
+
+    temp = to_float(payload.get("temp"), 30.0)
+    humidity = to_float(payload.get("humidity"), 65.0)
+    no2 = to_float(payload.get("NO2") or payload.get("no2"), 0.025)
+    pm25 = to_float(payload.get("PM25") or payload.get("pm25"), 17.0)
+    pm10 = to_float(payload.get("PM10") or payload.get("pm10"), 32.0)
+    wind = to_float(payload.get("wind"), 2.1)
+    solar = to_float(payload.get("solar"), 1.2)
+    sunshine = to_float(payload.get("sunshine"), 0.55)
+    pressure = to_float(payload.get("pressure"), 1010.0)
+    hour = to_float(payload.get("hour"), 16.0)
+
+    hour_effect = max(0, 1 - abs(hour - 16) / 9) * 0.018
+
+    predicted = (
+        0.011
+        + (temp - 25) * 0.0012
+        - (humidity - 70) * 0.00016
+        + no2 * 0.04
+        + (solar * 0.004)
+        + (sunshine * 0.004)
+        - (wind - 2.1) * 0.001
+        + hour_effect
+        + (pm25 - 17) * 0.00003
+        + (pm10 - 32) * 0.00002
+        + (pressure - 1010) * 0.00001
+    )
+
+    predicted = max(0, min(predicted, 0.22))
+
+    if predicted < 0.04:
+        level = "낮음"
+    elif predicted < 0.08:
+        level = "보통"
+    elif predicted < 0.12:
+        level = "높음"
+    else:
+        level = "매우 높음"
 
     return jsonify({
-        "success": True,
-        "message": "선도 기록이 삭제되었습니다.",
-        "data": {
-            "id": guidance["id"],
-            "student_number": guidance["student_number"],
-            "student_name": guidance["student_name"]
-        }
+        "predicted_o3": round(predicted, 4),
+        "predicted_o3_x100": round(predicted * 100, 3),
+        "level": level
     })
 
 
+# =========================================================
+# Render health check
+# =========================================================
+
+@app.route("/healthz")
+def healthz():
+    return jsonify({"status": "ok"}), 200
+
+
+# =========================================================
+# 파일 다운로드
+# =========================================================
+
+@app.route("/download/<path:filename>")
+def download_file(filename):
+    file_path = find_data_file(filename)
+
+    if not file_path:
+        return jsonify({
+            "error": "file not found",
+            "filename": filename
+        }), 404
+
+    return send_from_directory(file_path.parent, file_path.name, as_attachment=True)
+
+
+# =========================================================
+# Render 실행
+# =========================================================
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)

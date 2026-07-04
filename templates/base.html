@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page_title }} · 오존 분석</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="{% if request.cookies.get('sidebar_collapsed') == 'true' %}sidebar-collapsed{% endif %}">
+  <div class="scroll-progress" aria-hidden="true"></div>
+
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-top">
+        <a class="brand" href="{{ url_for('overview') }}" aria-label="홈으로 이동">
+          <span class="brand-mark">O₃</span>
+          <span class="brand-copy">
+            <strong>O₃</strong>
+            <small>summer analysis</small>
+          </span>
+        </a>
+
+        <button class="sidebar-toggle" type="button" data-menu-toggle aria-label="메뉴 접기 또는 펼치기">
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+
+      <nav class="nav-list" aria-label="주요 메뉴">
+        <a class="nav-item {{ 'active' if active_page == 'overview' else '' }}" href="{{ url_for('overview') }}">
+          <i></i><span>홈</span>
+        </a>
+        <a class="nav-item {{ 'active' if active_page == 'correlation' else '' }}" href="{{ url_for('correlation') }}">
+          <i></i><span>상관관계 분석</span>
+        </a>
+        <a class="nav-item {{ 'active' if active_page == 'variables' else '' }}" href="{{ url_for('variables') }}">
+          <i></i><span>변수별 분석</span>
+        </a>
+        <a class="nav-item {{ 'active' if active_page == 'time' else '' }}" href="{{ url_for('time_analysis') }}">
+          <i></i><span>시간대 분석</span>
+        </a>
+        <a class="nav-item {{ 'active' if active_page == 'models' else '' }}" href="{{ url_for('model_page') }}">
+          <i></i><span>모델링 결과</span>
+        </a>
+        <a class="nav-item {{ 'active' if active_page == 'prediction' else '' }}" href="{{ url_for('prediction') }}">
+          <i></i><span>예측 및 평가</span>
+        </a>
+        <a class="nav-item {{ 'active' if active_page == 'data' else '' }}" href="{{ url_for('data_page') }}">
+          <i></i><span>데이터 정보</span>
+        </a>
+        <a class="nav-item {{ 'active' if active_page == 'about' else '' }}" href="{{ url_for('about') }}">
+          <i></i><span>소개</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span>분석 기간</span>
+        <strong>{{ summary.dataset.date_start }} ~ {{ summary.dataset.date_end }}</strong>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <button class="menu-btn" type="button" aria-label="메뉴 열기" data-menu-toggle>
+          <span></span>
+          <span></span>
+        </button>
+
+        <div class="topbar-title">
+          <p class="eyebrow">Ozone analysis</p>
+          <h1>{{ page_title }}</h1>
+        </div>
+
+        <a class="topbar-link" href="{{ url_for('prediction') }}">오존 예측하기</a>
+      </header>
+
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <div class="image-modal" data-image-modal aria-hidden="true">
+    <button type="button" class="image-modal-close" data-modal-close>닫기</button>
+    <img src="" alt="확대된 그래프">
+  </div>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

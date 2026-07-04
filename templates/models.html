@@ -1,0 +1,692 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+  .model-page,
+  .model-page * {
+    font-family:
+      "Malgun Gothic",
+      "맑은 고딕",
+      "Apple SD Gothic Neo",
+      "Noto Sans KR",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      sans-serif !important;
+    letter-spacing: normal !important;
+    word-spacing: normal !important;
+    word-break: keep-all !important;
+    text-rendering: auto !important;
+  }
+
+  .model-page {
+    --bg: rgba(255,255,255,0.86);
+    --bg-strong: rgba(255,255,255,0.95);
+    --line: rgba(183,194,214,0.48);
+    --text: #182032;
+    --muted: #6f7b8f;
+    --blue: #5575d9;
+    --blue-soft: rgba(85,117,217,0.11);
+    --teal: #5aa99b;
+    --teal-soft: rgba(90,169,155,0.11);
+    --orange: #c99367;
+    --orange-soft: rgba(201,147,103,0.12);
+    --red: #d66a73;
+    --red-soft: rgba(214,106,115,0.11);
+    --shadow: 0 18px 42px rgba(35,48,78,0.075);
+
+    display: grid;
+    gap: 16px;
+  }
+
+  .model-card {
+    background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,255,255,0.78));
+    border: 1px solid rgba(255,255,255,0.90);
+    border-radius: 28px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(16px) saturate(135%);
+    -webkit-backdrop-filter: blur(16px) saturate(135%);
+    overflow: hidden;
+  }
+
+  .model-kicker {
+    margin: 0 0 9px;
+    color: var(--blue);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase;
+  }
+
+  .model-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 16px;
+  }
+
+  .model-hero-main {
+    padding: 30px;
+    min-height: 220px;
+    display: grid;
+    align-content: center;
+  }
+
+  .model-hero-main h2 {
+    margin: 0;
+    color: var(--text);
+    font-size: clamp(28px, 2.8vw, 42px);
+    line-height: 1.25;
+    font-weight: 800;
+  }
+
+  .model-hero-main p {
+    max-width: 840px;
+    margin: 14px 0 0;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.75;
+  }
+
+  .best-card {
+    padding: 24px;
+    display: grid;
+    align-content: center;
+    gap: 14px;
+  }
+
+  .best-name {
+    color: var(--text);
+    font-size: 24px;
+    line-height: 1.3;
+    font-weight: 800;
+  }
+
+  .best-name small {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--blue);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase;
+  }
+
+  .best-score-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .best-score {
+    padding: 14px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.72);
+    border: 1px solid var(--line);
+  }
+
+  .best-score span {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .best-score strong {
+    display: block;
+    margin-top: 5px;
+    color: var(--text);
+    font-size: 21px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .score-card {
+    min-height: 126px;
+    padding: 18px;
+  }
+
+  .score-icon {
+    width: 34px;
+    height: 34px;
+    margin-bottom: 12px;
+    display: grid;
+    place-items: center;
+    border-radius: 13px;
+    background: var(--blue-soft);
+    color: var(--blue);
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .score-card:nth-child(2) .score-icon {
+    background: var(--teal-soft);
+    color: var(--teal);
+  }
+
+  .score-card:nth-child(3) .score-icon {
+    background: var(--orange-soft);
+    color: var(--orange);
+  }
+
+  .score-card:nth-child(4) .score-icon {
+    background: var(--red-soft);
+    color: var(--red);
+  }
+
+  .score-card span {
+    display: block;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .score-card strong {
+    display: block;
+    margin-top: 6px;
+    color: var(--text);
+    font-size: 21px;
+    line-height: 1.25;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .score-card p {
+    margin: 7px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .compare-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .compare-card {
+    padding: 24px;
+  }
+
+  .compare-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .compare-head h3 {
+    margin: 0;
+    color: var(--text);
+    font-size: 23px;
+    line-height: 1.35;
+    font-weight: 800;
+  }
+
+  .compare-head p {
+    margin: 6px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .compare-badge {
+    flex: 0 0 auto;
+    padding: 7px 11px;
+    border-radius: 999px;
+    background: var(--blue-soft);
+    color: var(--blue);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .bar-list {
+    display: grid;
+    gap: 14px;
+  }
+
+  .bar-row {
+    padding: 15px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.70);
+    border: 1px solid var(--line);
+  }
+
+  .bar-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .bar-name {
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  .bar-value {
+    color: var(--text);
+    font-size: 16px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bar-track {
+    height: 13px;
+    border-radius: 999px;
+    background: rgba(130,145,170,0.14);
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    width: var(--w);
+    min-width: 4px;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--blue), #7d90dc);
+  }
+
+  .rmse .bar-fill {
+    background: linear-gradient(90deg, var(--orange), #d9aa83);
+  }
+
+  .bar-help {
+    margin-top: 7px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .best-row {
+    border-color: rgba(85,117,217,0.30);
+    background: linear-gradient(180deg, rgba(85,117,217,0.075), rgba(255,255,255,0.74));
+  }
+
+  .best-row .bar-name::after {
+    content: "  BEST";
+    display: inline-flex;
+    margin-left: 7px;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: var(--blue-soft);
+    color: var(--blue);
+    font-size: 10px;
+    font-weight: 800;
+    vertical-align: 1px;
+  }
+
+  .explain-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .explain-card {
+    padding: 20px;
+  }
+
+  .explain-card span {
+    display: inline-flex;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--blue-soft);
+    color: var(--blue);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .explain-card:nth-child(2) span {
+    background: var(--teal-soft);
+    color: var(--teal);
+  }
+
+  .explain-card:nth-child(3) span {
+    background: var(--orange-soft);
+    color: var(--orange);
+  }
+
+  .explain-card h3 {
+    margin: 13px 0 7px;
+    color: var(--text);
+    font-size: 18px;
+    line-height: 1.35;
+    font-weight: 800;
+  }
+
+  .explain-card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  .model-table-card {
+    padding: 24px;
+  }
+
+  .table-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .table-head h3 {
+    margin: 0;
+    color: var(--text);
+    font-size: 23px;
+    line-height: 1.35;
+    font-weight: 800;
+  }
+
+  .table-head p {
+    margin: 6px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .download-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.78);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: 18px;
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.64);
+  }
+
+  .model-table {
+    width: 100%;
+    min-width: 880px;
+    border-collapse: collapse;
+  }
+
+  .model-table th,
+  .model-table td {
+    padding: 14px 15px;
+    border-bottom: 1px solid rgba(184,194,214,0.32);
+    text-align: left;
+    font-size: 14px;
+  }
+
+  .model-table th {
+    color: var(--muted);
+    background: rgba(246,248,252,0.88);
+    font-weight: 800;
+  }
+
+  .model-table td {
+    color: var(--text);
+  }
+
+  .model-table tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .score-pill {
+    display: inline-flex;
+    min-width: 68px;
+    justify-content: center;
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: var(--blue-soft);
+    color: var(--blue);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (max-width: 1200px) {
+    .model-hero,
+    .compare-grid,
+    .explain-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .score-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 700px) {
+    .model-hero-main,
+    .best-card,
+    .score-card,
+    .compare-card,
+    .explain-card,
+    .model-table-card {
+      padding: 18px;
+      border-radius: 22px;
+    }
+
+    .score-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .compare-head,
+    .table-head {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .model-hero-main h2 {
+      font-size: 28px;
+    }
+    .model-name-cell {
+      color: var(--text) !important;
+      font-weight: 800 !important;
+      min-width: 230px !important;
+      white-space: normal !important;
+    }
+
+    .model-table th:first-child,
+    .model-table td:first-child {
+      width: 280px !important;
+    }
+  }
+
+  
+</style>
+
+<div class="model-page">
+  <section class="model-hero">
+    <article class="model-card model-hero-main">
+      <p class="model-kicker">Best model</p>
+      <h2>오존 농도 예측에서 가장 높은 성능을 보인 모델은 HistGradientBoosting Regression입니다.</h2>
+      <p>
+        선형 모델보다 비선형 관계를 반영할 수 있는 모델이 더 높은 설명력을 보였습니다.
+        오존 농도는 기온, 습도, 일사량, 시간대, 대기오염 물질이 함께 작용하기 때문에 복합적인 모델이 유리했습니다.
+      </p>
+    </article>
+
+    <aside class="model-card best-card">
+      <div class="best-name">
+        <small>Selected model</small>
+        {{ summary.modeling.best_model }}
+      </div>
+
+      <div class="best-score-grid">
+        <div class="best-score">
+          <span>R² Score</span>
+          <strong>{{ '%.3f'|format(summary.modeling.best_R2) }}</strong>
+        </div>
+        <div class="best-score">
+          <span>RMSE</span>
+          <strong>{{ '%.4f'|format(summary.modeling.best_RMSE) }}</strong>
+        </div>
+      </div>
+    </aside>
+  </section>
+
+  <section class="score-grid">
+    <article class="model-card score-card">
+      <div class="score-icon">R²</div>
+      <span>최고 설명력</span>
+      <strong>{{ '%.3f'|format(summary.modeling.best_R2) }}</strong>
+      <p>1에 가까울수록 실제값을 잘 설명합니다.</p>
+    </article>
+
+    <article class="model-card score-card">
+      <div class="score-icon">E</div>
+      <span>평균 절대 오차</span>
+      <strong>{{ '%.4f'|format(summary.modeling.best_MAE) }}</strong>
+      <p>낮을수록 예측 오차가 작습니다.</p>
+    </article>
+
+    <article class="model-card score-card">
+      <div class="score-icon">R</div>
+      <span>RMSE</span>
+      <strong>{{ '%.4f'|format(summary.modeling.best_RMSE) }}</strong>
+      <p>큰 오차에 더 민감한 지표입니다.</p>
+    </article>
+
+    <article class="model-card score-card">
+      <div class="score-icon">M</div>
+      <span>비교 모델 수</span>
+      <strong>{{ models|length }}개</strong>
+      <p>여러 회귀 모델의 성능을 비교했습니다.</p>
+    </article>
+  </section>
+
+  <section class="compare-grid">
+    <article class="model-card compare-card">
+      <div class="compare-head">
+        <div>
+          <p class="model-kicker">R² comparison</p>
+          <h3>모델별 설명력 비교</h3>
+          <p>막대가 길수록 오존 농도 변화를 더 잘 설명한 모델입니다.</p>
+        </div>
+        <span class="compare-badge">높을수록 좋음</span>
+      </div>
+
+      <div class="bar-list">
+        {% for row in models %}
+        <div class="bar-row {% if loop.first %}best-row{% endif %}">
+          <div class="bar-top">
+            {% set model_name = row['Model'] if row['Model'] is defined else row['model'] if row['model'] is defined else row['모델'] if row['모델'] is defined else row['name'] if row['name'] is defined else '모델명 없음' %}
+            <span class="bar-name">{{ model_name }}</span>
+            <span class="bar-value">{{ '%.3f'|format(row.R2) }}</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" style="--w: {{ (row.R2 / summary.modeling.best_R2 * 100)|round(1) }}%;"></div>
+          </div>
+          {% if loop.first %}
+          <div class="bar-help">가장 높은 설명력을 보인 모델입니다.</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </article>
+
+    <article class="model-card compare-card">
+      <div class="compare-head">
+        <div>
+          <p class="model-kicker">RMSE comparison</p>
+          <h3>모델별 오차 비교</h3>
+          <p>막대가 짧을수록 오차가 작고, 예측값이 실제값에 더 가깝습니다.</p>
+        </div>
+        <span class="compare-badge">낮을수록 좋음</span>
+      </div>
+
+      <div class="bar-list rmse">
+        {% for row in models %}
+        <div class="bar-row {% if loop.first %}best-row{% endif %}">
+          <div class="bar-top">
+            {% set model_name = row['Model'] if row['Model'] is defined else row['model'] if row['model'] is defined else row['모델'] if row['모델'] is defined else row['name'] if row['name'] is defined else '모델명 없음' %}
+            <span class="bar-name">{{ model_name }}</span>
+            <span class="bar-value">{{ '%.4f'|format(row.RMSE) }}</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" style="--w: {{ (row.RMSE / 0.0145 * 100)|round(1) }}%;"></div>
+          </div>
+          {% if loop.first %}
+          <div class="bar-help">가장 낮은 RMSE를 기록한 모델입니다.</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </article>
+  </section>
+
+  <section class="explain-grid">
+    <article class="model-card explain-card">
+      <span>해석 1</span>
+      <h3>비선형 모델이 더 유리했습니다.</h3>
+      <p>오존 농도는 기온, 일사량, 시간대, 오염물질이 복합적으로 작용하므로 단순 선형 관계만으로 설명하기 어렵습니다.</p>
+    </article>
+
+    <article class="model-card explain-card">
+      <span>해석 2</span>
+      <h3>R²와 RMSE를 함께 봐야 합니다.</h3>
+      <p>R²는 설명력, RMSE는 실제 오차를 보여주기 때문에 두 지표를 함께 비교해야 합니다.</p>
+    </article>
+
+    <article class="model-card explain-card">
+      <span>해석 3</span>
+      <h3>고농도 구간은 예측이 어렵습니다.</h3>
+      <p>오존 농도가 높은 구간에서는 변수 간 상호작용이 커져 예측 오차가 커질 가능성이 있습니다.</p>
+    </article>
+  </section>
+
+  <section class="model-card model-table-card">
+    <div class="table-head">
+      <div>
+        <p class="model-kicker">Model table</p>
+        <h3>모델 성능표</h3>
+        <p>각 모델의 R², MAE, RMSE를 한 번에 비교합니다.</p>
+      </div>
+      <a class="download-link" href="{{ url_for('download_file', filename='model_performance.csv') }}">CSV 다운로드</a>
+    </div>
+
+    <div class="table-wrap">
+      <table class="model-table">
+        <thead>
+          <tr>
+            <th>모델</th>
+            <th>R²</th>
+            <th>MAE</th>
+            <th>RMSE</th>
+            <th>표본 수</th>
+            <th>사용 변수 수</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in models %}
+          {% set model_name = row['Model'] if row['Model'] is defined else row['model'] if row['model'] is defined else row['모델'] if row['모델'] is defined else row['name'] if row['name'] is defined else '모델명 없음' %}
+          <tr>
+            <td class="model-name-cell">{{ model_name }}</td>
+            <td><span class="score-pill">{{ '%.3f'|format(row.R2) }}</span></td>
+            <td>{{ '%.4f'|format(row.MAE) }}</td>
+            <td>{{ '%.4f'|format(row.RMSE) }}</td>
+            <td>{{ row.sample_rows }}</td>
+            <td>{{ row.features_used }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+{% endblock %}

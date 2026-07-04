@@ -1,0 +1,540 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+  .about-page,
+  .about-page * {
+    font-family:
+      "Malgun Gothic",
+      "맑은 고딕",
+      "Apple SD Gothic Neo",
+      "Noto Sans KR",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      sans-serif !important;
+    letter-spacing: normal !important;
+    word-spacing: normal !important;
+    word-break: keep-all !important;
+    overflow-wrap: break-word !important;
+    text-rendering: auto !important;
+  }
+
+  .about-page {
+    --about-bg: rgba(255,255,255,0.86);
+    --about-bg-strong: rgba(255,255,255,0.95);
+    --about-line: rgba(184,194,214,0.46);
+    --about-text: #182032;
+    --about-muted: #6f7b8f;
+    --about-blue: #5575d9;
+    --about-blue-soft: rgba(85,117,217,0.10);
+    --about-teal: #5aa99b;
+    --about-teal-soft: rgba(90,169,155,0.10);
+    --about-orange: #c99367;
+    --about-orange-soft: rgba(201,147,103,0.11);
+    --about-purple: #7d86c9;
+    --about-purple-soft: rgba(125,134,201,0.10);
+    --about-shadow: 0 18px 42px rgba(35,48,78,0.075);
+
+    display: grid;
+    gap: 16px;
+  }
+
+  .about-card {
+    background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,255,255,0.78));
+    border: 1px solid rgba(255,255,255,0.90);
+    border-radius: 28px;
+    box-shadow: var(--about-shadow);
+    backdrop-filter: blur(16px) saturate(135%);
+    -webkit-backdrop-filter: blur(16px) saturate(135%);
+    overflow: hidden;
+  }
+
+  .about-kicker {
+    margin: 0 0 9px;
+    color: var(--about-blue);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase;
+  }
+
+  .about-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) 360px;
+    gap: 16px;
+  }
+
+  .about-main {
+    padding: 30px;
+    min-height: 250px;
+    display: grid;
+    align-content: center;
+  }
+
+  .about-main h2 {
+    margin: 0;
+    color: var(--about-text);
+    font-size: clamp(28px, 2.8vw, 42px);
+    line-height: 1.25;
+    font-weight: 800;
+  }
+
+  .about-main p {
+    max-width: 920px;
+    margin: 14px 0 0;
+    color: var(--about-muted);
+    font-size: 15px;
+    line-height: 1.75;
+  }
+
+  .about-side {
+    padding: 24px;
+    display: grid;
+    gap: 12px;
+    align-content: center;
+  }
+
+  .about-side-title {
+    color: var(--about-text);
+    font-size: 21px;
+    line-height: 1.35;
+    font-weight: 800;
+  }
+
+  .about-side-title small {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--about-blue);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase;
+  }
+
+  .about-mini-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .about-mini {
+    padding: 14px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.72);
+    border: 1px solid var(--about-line);
+  }
+
+  .about-mini span {
+    display: block;
+    color: var(--about-muted);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .about-mini strong {
+    display: block;
+    margin-top: 5px;
+    color: var(--about-text);
+    font-size: 18px;
+    line-height: 1.3;
+    font-weight: 800;
+  }
+
+  .about-section {
+    padding: 26px;
+  }
+
+  .about-section-head {
+    margin-bottom: 18px;
+  }
+
+  .about-section-head h2 {
+    margin: 0;
+    color: var(--about-text);
+    font-size: 25px;
+    line-height: 1.35;
+    font-weight: 800;
+  }
+
+  .about-section-head p {
+    margin: 9px 0 0;
+    color: var(--about-muted);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .about-process-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .process-card {
+    min-height: 190px;
+    padding: 18px;
+    border-radius: 22px;
+    background: rgba(255,255,255,0.72);
+    border: 1px solid var(--about-line);
+  }
+
+  .process-num {
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    background: var(--about-blue-soft);
+    color: var(--about-blue);
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  .process-card:nth-child(2) .process-num {
+    background: var(--about-teal-soft);
+    color: var(--about-teal);
+  }
+
+  .process-card:nth-child(3) .process-num {
+    background: var(--about-purple-soft);
+    color: var(--about-purple);
+  }
+
+  .process-card:nth-child(4) .process-num {
+    background: var(--about-orange-soft);
+    color: var(--about-orange);
+  }
+
+  .process-card h3 {
+    margin: 14px 0 8px;
+    color: var(--about-text);
+    font-size: 18px;
+    line-height: 1.35;
+    font-weight: 800;
+  }
+
+  .process-card p {
+    margin: 0;
+    color: var(--about-muted);
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  .about-grid-2 {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 0.9fr);
+    gap: 16px;
+  }
+
+  .feature-list {
+    display: grid;
+    gap: 10px;
+  }
+
+  .feature-row {
+    display: grid;
+    grid-template-columns: 110px minmax(0, 1fr);
+    gap: 14px;
+    padding: 14px 15px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.72);
+    border: 1px solid var(--about-line);
+  }
+
+  .feature-row span {
+    color: var(--about-muted);
+    font-size: 13px;
+    line-height: 1.5;
+    font-weight: 800;
+  }
+
+  .feature-row strong {
+    color: var(--about-text);
+    font-size: 14px;
+    line-height: 1.6;
+    font-weight: 700;
+  }
+
+  .page-list {
+    display: grid;
+    gap: 10px;
+  }
+
+  .page-link {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    padding: 15px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.72);
+    border: 1px solid var(--about-line);
+    text-decoration: none;
+    transition: 0.18s ease;
+  }
+
+  .page-link:hover {
+    transform: translateY(-2px);
+    background: #fff;
+    box-shadow: 0 12px 26px rgba(35,48,78,0.07);
+  }
+
+  .page-link strong {
+    display: block;
+    color: var(--about-text);
+    font-size: 15px;
+    line-height: 1.45;
+    font-weight: 800;
+  }
+
+  .page-link span {
+    display: block;
+    margin-top: 4px;
+    color: var(--about-muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .page-arrow {
+    color: var(--about-blue);
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .about-note-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .about-note {
+    padding: 20px;
+  }
+
+  .about-note span {
+    display: inline-flex;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--about-blue-soft);
+    color: var(--about-blue);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .about-note:nth-child(2) span {
+    background: var(--about-teal-soft);
+    color: var(--about-teal);
+  }
+
+  .about-note:nth-child(3) span {
+    background: var(--about-orange-soft);
+    color: var(--about-orange);
+  }
+
+  .about-note h3 {
+    margin: 13px 0 7px;
+    color: var(--about-text);
+    font-size: 18px;
+    line-height: 1.35;
+    font-weight: 800;
+  }
+
+  .about-note p {
+    margin: 0;
+    color: var(--about-muted);
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  @media (max-width: 1200px) {
+    .about-hero,
+    .about-grid-2 {
+      grid-template-columns: 1fr;
+    }
+
+    .about-process-grid,
+    .about-note-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 700px) {
+    .about-main,
+    .about-side,
+    .about-section,
+    .about-note {
+      padding: 18px;
+      border-radius: 22px;
+    }
+
+    .about-process-grid,
+    .about-note-grid,
+    .about-mini-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .feature-row,
+    .page-link {
+      grid-template-columns: 1fr;
+    }
+
+    .about-main h2 {
+      font-size: 28px;
+    }
+  }
+</style>
+
+<div class="about-page">
+  <section class="about-hero">
+    <article class="about-card about-main">
+      <p class="about-kicker">About</p>
+      <h2>오존 농도 분석 결과 대시보드입니다.</h2>
+      <p>
+        2026년 남녕고등학교 데이터 랩 퀘스트 최종 산출물입니다.
+        colab에서 분석한 결과를 보기 쉽게 정리했습니다.
+      </p>
+    </article>
+
+    <aside class="about-card about-side">
+      <div class="about-side-title">
+        <small>Project type</small>
+        데이터 분석 웹
+      </div>
+
+      <div class="about-mini-grid">
+        <div class="about-mini">
+          <span>대상 기간</span>
+          <strong>2010~2025</strong>
+        </div>
+
+        <div class="about-mini">
+          <span>대상 월</span>
+          <strong>6~8월</strong>
+        </div>
+      </div>
+    </aside>
+  </section>
+
+  <section class="about-card about-section">
+    <div class="about-section-head">
+      <p class="about-kicker">Workflow</p>
+      <h2>탐구 진행 흐름</h2>
+      <p>데이터 통합부터 예측 평가까지의 과정을 4단계로 정리했습니다.</p>
+    </div>
+
+    <div class="about-process-grid">
+      <article class="process-card">
+        <div class="process-num">01</div>
+        <h3>데이터 통합</h3>
+        <p>146개의 분산된 데이터를 2개의 데이터로 통합했습니다.</p>
+      </article>
+
+      <article class="process-card">
+        <div class="process-num">02</div>
+        <h3>탐색 분석</h3>
+        <p>상관관계, 산점도, 시간대별,월별,연도별 평균 변화를 확인했습니다.</p>
+      </article>
+
+      <article class="process-card">
+        <div class="process-num">03</div>
+        <h3>모델 비교</h3>
+        <p>선형회귀, Ridge, Polynomial Ridge, SGD ElasticNet, HistGradientBoosting 성능을 비교했습니다.</p>
+      </article>
+
+      <article class="process-card">
+        <div class="process-num">04</div>
+        <h3>예측 평가</h3>
+        <p>실제값과 예측값 그래프, 잔차 산점도, 잔차 분포를 통해 모델 한계를 확인했습니다.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="about-grid-2">
+    <article class="about-card about-section">
+      <div class="about-section-head">
+        <p class="about-kicker">Structure</p>
+        <h2>웹 구성 요소</h2>
+        <p>각 페이지는 분석 결과를 다른 관점에서 보여주도록 구성했습니다.</p>
+      </div>
+
+      <div class="feature-list">
+        <div class="feature-row">
+          <span>홈</span>
+          <strong>전체 분석 흐름과 핵심 지표를 요약합니다.</strong>
+        </div>
+
+        <div class="feature-row">
+          <span>상관관계</span>
+          <strong>오존과 기상,대기오염 변수 사이의 관계를 확인합니다.</strong>
+        </div>
+
+        <div class="feature-row">
+          <span>시간대 분석</span>
+          <strong>시간, 월, 연도에 따른 오존 농도 변화를 비교합니다.</strong>
+        </div>
+
+        <div class="feature-row">
+          <span>모델링 결과</span>
+          <strong>여러 회귀 모델의 R², MAE, RMSE를 비교합니다.</strong>
+        </div>
+
+        <div class="feature-row">
+          <span>예측 및 평가</span>
+          <strong>입력값을 조정하며 오존 농도 예측 결과를 확인합니다.</strong>
+        </div>
+      </div>
+    </article>
+
+    <article class="about-card about-section">
+      <div class="about-section-head">
+        <p class="about-kicker">Quick links</p>
+        <h2>바로가기</h2>
+        <p>필요한 분석 화면으로 바로 이동할 수 있습니다.</p>
+      </div>
+
+      <div class="page-list">
+        <a class="page-link" href="{{ url_for('overview') }}">
+          <span>
+            <strong>대시보드</strong>
+            <span>전체 결과와 핵심 요약 확인</span>
+          </span>
+          <span class="page-arrow">이동</span>
+        </a>
+
+        <a class="page-link" href="{{ url_for('correlation') }}">
+          <span>
+            <strong>상관관계 분석</strong>
+            <span>변수 간 관계와 히트맵 확인</span>
+          </span>
+          <span class="page-arrow">이동</span>
+        </a>
+
+        <a class="page-link" href="{{ url_for('model_page') }}">
+          <span>
+            <strong>모델링 결과</strong>
+            <span>모델 성능 비교 확인</span>
+          </span>
+          <span class="page-arrow">이동</span>
+        </a>
+
+        <a class="page-link" href="{{ url_for('prediction') }}">
+          <span>
+            <strong>예측 및 평가</strong>
+            <span>입력값 변경에 따른 예측 결과 확인</span>
+          </span>
+          <span class="page-arrow">이동</span>
+        </a>
+      </div>
+    </article>
+  </section>
+
+    <article class="about-card about-main">
+      <p class="about-kicker">개발자 정보</p>
+      <h2>강준환</h2>
+      <p>
+        남녕고등학교 2학년 2반 강준환입니다.
+      </p>
+    </article>
+</div>
+
+{% endblock %}

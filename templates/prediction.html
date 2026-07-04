@@ -1,0 +1,1193 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+  .ozone-page {
+    --bg-card: rgba(255, 255, 255, 0.82);
+    --bg-card-strong: rgba(255, 255, 255, 0.92);
+    --line: rgba(188, 198, 216, 0.42);
+    --line-strong: rgba(162, 176, 201, 0.34);
+    --text: #172033;
+    --muted: #6f7d91;
+
+    --primary: #4f7cff;
+    --primary-soft: rgba(79, 124, 255, 0.12);
+    --secondary: #6f6cff;
+    --secondary-soft: rgba(111, 108, 255, 0.10);
+    --mint: #2fb48c;
+    --mint-soft: rgba(47, 180, 140, 0.12);
+    --danger: #de5b67;
+    --danger-soft: rgba(222, 91, 103, 0.10);
+
+    --shadow: 0 18px 48px rgba(30, 50, 84, 0.08);
+    --shadow-soft: 0 10px 28px rgba(30, 50, 84, 0.06);
+    --radius: 28px;
+    --radius-md: 22px;
+    --radius-sm: 18px;
+    --blur: blur(16px) saturate(140%);
+  }
+
+  .ozone-page {
+    display: grid;
+    gap: 18px;
+    animation: ozoneFadeUp 0.42s ease both;
+  }
+
+  @keyframes ozoneFadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .ozone-card {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+  }
+
+  .ozone-card.strong {
+    background: var(--bg-card-strong);
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) 360px;
+    gap: 18px;
+  }
+
+  .hero-card {
+    padding: 30px;
+    background:
+      radial-gradient(circle at 10% 10%, rgba(79, 124, 255, 0.10), transparent 30%),
+      radial-gradient(circle at 90% 20%, rgba(47, 180, 140, 0.08), transparent 30%),
+      var(--bg-card-strong);
+  }
+
+  .eyebrow-small {
+    margin: 0 0 10px;
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .hero-card h2 {
+    margin: 0;
+    font-size: clamp(28px, 3vw, 44px);
+    line-height: 1.15;
+    letter-spacing: -0.06em;
+    color: var(--text);
+  }
+
+  .hero-card p {
+    margin: 12px 0 0;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.65;
+    max-width: 860px;
+  }
+
+  .hero-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 12px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.75);
+    border: 1px solid var(--line);
+    color: #44536a;
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .hero-tag i {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--primary), var(--mint));
+    display: inline-block;
+  }
+
+  .result-card {
+    padding: 26px;
+    display: grid;
+    align-content: center;
+    gap: 14px;
+    min-height: 236px;
+    background:
+      radial-gradient(circle at 20% 12%, rgba(79, 124, 255, 0.14), transparent 34%),
+      radial-gradient(circle at 80% 18%, rgba(111, 108, 255, 0.10), transparent 28%),
+      var(--bg-card-strong);
+  }
+
+  .result-label {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 850;
+  }
+
+  .result-value {
+    margin: 0;
+    color: var(--text);
+    font-size: 48px;
+    line-height: 1;
+    letter-spacing: -0.07em;
+  }
+
+  .result-level {
+    width: fit-content;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: var(--primary-soft);
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 900;
+  }
+
+  .result-message {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .main-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) 360px;
+    gap: 18px;
+    align-items: start;
+  }
+
+  .control-card {
+    padding: 24px;
+  }
+
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .section-head h3 {
+    margin: 0;
+    color: var(--text);
+    font-size: 24px;
+    letter-spacing: -0.045em;
+  }
+
+  .section-head p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .reset-btn {
+    height: 40px;
+    padding: 0 15px;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    background: rgba(255,255,255,0.82);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 850;
+    cursor: pointer;
+    transition: 0.18s ease;
+  }
+
+  .reset-btn:hover {
+    transform: translateY(-2px);
+    background: #fff;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .control-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 13px;
+  }
+
+  .control-box {
+    min-width: 0;
+    padding: 16px;
+    border-radius: var(--radius-md);
+    background: rgba(255,255,255,0.62);
+    border: 1px solid var(--line);
+  }
+
+  .control-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .control-top label {
+    color: #40506a;
+    font-size: 13px;
+    font-weight: 900;
+  }
+
+  .control-num {
+    color: var(--text);
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    white-space: nowrap;
+  }
+
+  .control-num small {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 750;
+  }
+
+  .control-box input[type="range"] {
+    width: 100%;
+    height: 6px;
+    accent-color: var(--primary);
+    cursor: pointer;
+  }
+
+  .control-extra {
+    display: grid;
+    gap: 16px;
+    margin-top: 18px;
+  }
+
+  .fixed-info {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .fixed-card {
+    padding: 16px 18px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(145deg, rgba(255,255,255,0.86), rgba(247,249,255,0.88));
+    border: 1px solid var(--line);
+  }
+
+  .fixed-card span {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .fixed-card strong {
+    display: block;
+    margin-top: 6px;
+    color: var(--text);
+    font-size: 20px;
+    letter-spacing: -0.045em;
+  }
+
+  .preset-wrap {
+    padding: 18px;
+    border-radius: var(--radius-md);
+    background: rgba(255,255,255,0.62);
+    border: 1px solid var(--line);
+  }
+
+  .preset-wrap h4,
+  .insight-wrap h4,
+  .chart-card h3 {
+    margin: 0;
+    color: var(--text);
+    letter-spacing: -0.04em;
+  }
+
+  .preset-wrap p,
+  .insight-wrap p {
+    margin: 6px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .preset-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .preset-btn {
+    padding: 10px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    background: rgba(255,255,255,0.84);
+    color: #31445f;
+    font-size: 13px;
+    font-weight: 850;
+    cursor: pointer;
+    transition: 0.18s ease;
+  }
+
+  .preset-btn:hover {
+    transform: translateY(-2px);
+    background: #fff;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .insight-wrap {
+    padding: 18px;
+    border-radius: var(--radius-md);
+    background: rgba(255,255,255,0.62);
+    border: 1px solid var(--line);
+  }
+
+  .insight-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 14px;
+  }
+
+  .insight-item {
+    padding: 16px;
+    border-radius: 18px;
+    border: 1px solid var(--line);
+    background:
+      linear-gradient(145deg, rgba(255,255,255,0.86), rgba(246,249,255,0.88));
+  }
+
+  .insight-item .insight-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .insight-item.blue .insight-tag {
+    background: var(--primary-soft);
+    color: var(--primary);
+  }
+
+  .insight-item.mint .insight-tag {
+    background: var(--mint-soft);
+    color: var(--mint);
+  }
+
+  .insight-item.purple .insight-tag {
+    background: var(--secondary-soft);
+    color: var(--secondary);
+  }
+
+  .insight-item strong {
+    display: block;
+    margin-top: 10px;
+    color: var(--text);
+    font-size: 24px;
+    letter-spacing: -0.05em;
+  }
+
+  .insight-item p {
+    margin: 6px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .side-stack {
+    display: grid;
+    gap: 18px;
+  }
+
+  .meter-card {
+    padding: 24px;
+    text-align: center;
+  }
+
+  .meter {
+    width: 190px;
+    height: 190px;
+    margin: 0 auto 16px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background:
+      conic-gradient(var(--primary) var(--meter), rgba(79, 124, 255, 0.13) 0),
+      #fff;
+    position: relative;
+    transition: background 0.22s ease;
+  }
+
+  .meter::after {
+    content: "";
+    position: absolute;
+    inset: 14px;
+    border-radius: inherit;
+    background: rgba(255,255,255,0.95);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.92);
+  }
+
+  .meter-inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  .meter-inner strong {
+    display: block;
+    color: var(--text);
+    font-size: 38px;
+    letter-spacing: -0.07em;
+  }
+
+  .meter-inner span {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 850;
+  }
+
+  .meter-card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .effect-card {
+    padding: 22px;
+  }
+
+  .effect-card h3 {
+    margin: 0 0 14px;
+    font-size: 20px;
+    letter-spacing: -0.04em;
+    color: var(--text);
+  }
+
+  .effect-list {
+    display: grid;
+    gap: 11px;
+  }
+
+  .effect-row {
+    display: grid;
+    grid-template-columns: 76px minmax(0, 1fr) 68px;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+  }
+
+  .effect-name {
+    color: #40506a;
+    font-weight: 850;
+  }
+
+  .effect-track {
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(125, 144, 170, 0.14);
+    overflow: hidden;
+  }
+
+  .effect-bar {
+    width: var(--bar);
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--mint), #59c7a4);
+  }
+
+  .effect-bar.minus {
+    background: linear-gradient(90deg, var(--danger), #ee7d89);
+  }
+
+  .effect-value {
+    color: var(--muted);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .note-card {
+    padding: 18px 20px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .chart-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.7fr);
+    gap: 18px;
+  }
+
+  .chart-card {
+    padding: 22px;
+  }
+
+  .chart-card img {
+    width: 100%;
+    display: block;
+    border-radius: 20px;
+    background: #fff;
+    border: 1px solid var(--line);
+  }
+
+  .chart-card .subtext {
+    margin: 8px 0 14px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .summary-list {
+    display: grid;
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .summary-list div {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 13px 14px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.70);
+    border: 1px solid var(--line);
+  }
+
+  .summary-list span {
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .summary-list strong {
+    color: var(--text);
+    font-size: 14px;
+  }
+
+  @media (max-width: 1280px) {
+    .hero-grid,
+    .main-grid,
+    .chart-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .control-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .fixed-info,
+    .insight-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .hero-card,
+    .result-card,
+    .control-card,
+    .meter-card,
+    .effect-card,
+    .note-card,
+    .chart-card {
+      padding: 20px;
+    }
+
+    .control-grid,
+    .fixed-info,
+    .insight-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .section-head {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .result-value {
+      font-size: 38px;
+    }
+
+    .meter {
+      width: 160px;
+      height: 160px;
+    }
+  }
+</style>
+
+<div class="ozone-page" id="ozonePage">
+  <section class="hero-grid">
+    <article class="ozone-card strong hero-card">
+      <p class="eyebrow-small">Live ozone simulator</p>
+      <h2>기상·대기 조건을 바꾸면서 오존 농도를 추정합니다.</h2>
+      <p>
+        이 예측기는 업로드한 분석 결과에서 확인된 경향을 바탕으로 만든 탐구용 시뮬레이터입니다.
+        변수 값을 움직이면 오존 농도가 어떻게 달라지는지 직관적으로 확인할 수 있습니다.
+      </p>
+
+      <div class="hero-tags">
+        <span class="hero-tag"><i></i> 기준 월: 6월 고정</span>
+        <span class="hero-tag"><i></i> 기준 연도: 2024년 고정</span>
+      </div>
+    </article>
+
+    <aside class="ozone-card strong result-card">
+      <span class="result-label">예상 O₃ 농도</span>
+      <h2 class="result-value" id="o3Value">0.0000 ppm</h2>
+      <span class="result-level" id="o3Level">계산 중</span>
+      <p class="result-message" id="o3Message">입력값을 바탕으로 예측하고 있습니다.</p>
+    </aside>
+  </section>
+
+  <section class="main-grid">
+    <article class="ozone-card control-card">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow-small">Input controls</p>
+          <h3>입력값 조정</h3>
+          <p>월과 연도는 고정하고, 실제로 반응이 큰 변수들만 조정하도록 단순화했습니다.</p>
+        </div>
+        <button type="button" class="reset-btn" id="resetPredictor">초기화</button>
+      </div>
+
+      <div class="control-grid">
+        <div class="control-box">
+          <div class="control-top">
+            <label for="temp">기온</label>
+            <span class="control-num"><b data-value="temp">30.0</b> <small>℃</small></span>
+          </div>
+          <input id="temp" data-input="temp" type="range" min="10" max="42" step="0.1" value="30.0">
+        </div>
+
+        <div class="control-box">
+          <div class="control-top">
+            <label for="humidity">습도</label>
+            <span class="control-num"><b data-value="humidity">65</b> <small>%</small></span>
+          </div>
+          <input id="humidity" data-input="humidity" type="range" min="0" max="100" step="1" value="65">
+        </div>
+
+        <div class="control-box">
+          <div class="control-top">
+            <label for="no2">NO₂</label>
+            <span class="control-num"><b data-value="no2">0.025</b> <small>ppm</small></span>
+          </div>
+          <input id="no2" data-input="no2" type="range" min="0" max="0.18" step="0.001" value="0.025">
+        </div>
+
+        <div class="control-box">
+          <div class="control-top">
+            <label for="pm25">PM2.5</label>
+            <span class="control-num"><b data-value="pm25">17</b> <small>㎍/㎥</small></span>
+          </div>
+          <input id="pm25" data-input="pm25" type="range" min="0" max="100" step="1" value="17">
+        </div>
+
+        <div class="control-box">
+          <div class="control-top">
+            <label for="pm10">PM10</label>
+            <span class="control-num"><b data-value="pm10">32</b> <small>㎍/㎥</small></span>
+          </div>
+          <input id="pm10" data-input="pm10" type="range" min="0" max="180" step="1" value="32">
+        </div>
+
+        <div class="control-box">
+          <div class="control-top">
+            <label for="wind">풍속</label>
+            <span class="control-num"><b data-value="wind">2.1</b> <small>m/s</small></span>
+          </div>
+          <input id="wind" data-input="wind" type="range" min="0" max="10" step="0.1" value="2.1">
+        </div>
+
+        <div class="control-box">
+          <div class="control-top">
+            <label for="solar">일사량</label>
+            <span class="control-num"><b data-value="solar">1.2</b> <small>MJ/㎡</small></span>
+          </div>
+          <input id="solar" data-input="solar" type="range" min="0" max="3.5" step="0.1" value="1.2">
+        </div>
+
+        <div class="control-box">
+          <div class="control-top">
+            <label for="sunshine">일조 비율</label>
+            <span class="control-num"><b data-value="sunshine">0.55</b></span>
+          </div>
+          <input id="sunshine" data-input="sunshine" type="range" min="0" max="1" step="0.01" value="0.55">
+        </div>
+
+        <div class="control-box">
+          <div class="control-top">
+            <label for="hour">시간</label>
+            <span class="control-num"><b data-value="hour">16</b> <small>시</small></span>
+          </div>
+          <input id="hour" data-input="hour" type="range" min="0" max="23" step="1" value="16">
+        </div>
+
+        <div class="control-box">
+          <div class="control-top">
+            <label for="pressure">기압 지표</label>
+            <span class="control-num"><b data-value="pressure">16.0</b></span>
+          </div>
+          <input id="pressure" data-input="pressure" type="range" min="0" max="35" step="0.1" value="16.0">
+        </div>
+      </div>
+
+      <div class="control-extra">
+
+        <div class="preset-wrap">
+          <h4>빠른 시나리오</h4>
+          <p>자주 비교하는 조건을 한 번에 적용할 수 있습니다.</p>
+
+          <div class="preset-list">
+            <button type="button" class="preset-btn" data-preset="morning">아침 출근 시간</button>
+            <button type="button" class="preset-btn" data-preset="afternoon">맑은 오후</button>
+            <button type="button" class="preset-btn" data-preset="hot_clear">고온·강한 일사</button>
+            <button type="button" class="preset-btn" data-preset="humid_cloudy">습하고 흐림</button>
+            <button type="button" class="preset-btn" data-preset="polluted">대기오염 증가</button>
+          </div>
+        </div>
+
+        <div class="insight-wrap">
+          <h4>현재 조건 해석</h4>
+          <p>입력값을 기반으로 현재 상황을 3가지 관점에서 요약합니다.</p>
+
+          <div class="insight-grid">
+            <div class="insight-item blue">
+              <span class="insight-tag">Photochemistry</span>
+              <strong id="photoScore">0</strong>
+              <p id="photoText">광화학 반응 조건을 계산 중입니다.</p>
+            </div>
+
+            <div class="insight-item mint">
+              <span class="insight-tag">Dispersion</span>
+              <strong id="dispersionScore">0</strong>
+              <p id="dispersionText">대기 확산 조건을 계산 중입니다.</p>
+            </div>
+
+            <div class="insight-item purple">
+              <span class="insight-tag">Pollution</span>
+              <strong id="pollutionScore">0</strong>
+              <p id="pollutionText">오염 전구물질 영향을 계산 중입니다.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <aside class="side-stack">
+      <article class="ozone-card meter-card">
+        <div class="meter" id="o3Meter" style="--meter: 0%;">
+          <div class="meter-inner">
+            <strong id="o3Percent">0.000</strong>
+            <span>O₃ × 100</span>
+          </div>
+        </div>
+        <p id="meterText">오존 농도 수준을 시각화합니다.</p>
+      </article>
+
+      <article class="ozone-card effect-card">
+        <h3>예측에 작용한 방향</h3>
+        <div class="effect-list" id="effectList"></div>
+      </article>
+
+      <article class="ozone-card note-card">
+        이 예측기는 업로드한 분석 결과에서 확인된 경향을 바탕으로 만든 탐구용 추정 모델입니다.
+        실제 대기질 예보나 공식 측정값으로 사용하면 안 됩니다.
+      </article>
+    </aside>
+  </section>
+
+  <section class="chart-grid">
+    <article class="ozone-card chart-card">
+      <p class="eyebrow-small">Model validation</p>
+      <h3>실제값과 예측값 비교</h3>
+      <p class="subtext">대각선에 가까울수록 모델 예측이 실제값과 잘 맞는다는 뜻입니다.</p>
+      <img src="{{ url_for('static', filename='img/10_actual_vs_predicted.png') }}" alt="실제값과 예측값 비교 그래프">
+    </article>
+
+    <article class="ozone-card chart-card">
+      <p class="eyebrow-small">Model score</p>
+      <h3>모델 평가 요약</h3>
+      <p class="subtext">업로드된 분석 결과 중 최고 성능 모델의 핵심 지표입니다.</p>
+
+      <div class="summary-list">
+        <div>
+          <span>Best model</span>
+          <strong>{{ summary.modeling.best_model }}</strong>
+        </div>
+        <div>
+          <span>R²</span>
+          <strong>{{ '%.3f'|format(summary.modeling.best_R2) }}</strong>
+        </div>
+        <div>
+          <span>MAE</span>
+          <strong>{{ '%.4f'|format(summary.modeling.best_MAE) }}</strong>
+        </div>
+        <div>
+          <span>RMSE</span>
+          <strong>{{ '%.4f'|format(summary.modeling.best_RMSE) }}</strong>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="chart-grid">
+    <article class="ozone-card chart-card">
+      <p class="eyebrow-small">Residual</p>
+      <h3>잔차 산점도</h3>
+      <p class="subtext">예측값에 따라 오차가 어떻게 분포하는지 확인할 수 있습니다.</p>
+      <img src="{{ url_for('static', filename='img/11_residual_plot.png') }}" alt="잔차 산점도">
+    </article>
+
+    <article class="ozone-card chart-card">
+      <p class="eyebrow-small">Distribution</p>
+      <h3>잔차 분포</h3>
+      <p class="subtext">잔차가 0 주변에 모일수록 전반적인 예측이 안정적이라고 볼 수 있습니다.</p>
+      <img src="{{ url_for('static', filename='img/12_residual_distribution.png') }}" alt="잔차 분포">
+    </article>
+  </section>
+</div>
+
+<script>
+  const DEFAULTS = {
+    temp: 30.0,
+    humidity: 65,
+    no2: 0.025,
+    pm25: 17,
+    pm10: 32,
+    wind: 2.1,
+    solar: 1.2,
+    sunshine: 0.55,
+    hour: 16,
+    pressure: 16.0
+  };
+
+  const FIXED_MONTH = 6;
+  const FIXED_YEAR = 2024;
+
+  const hourlyMean = {
+    0: 0.020, 1: 0.021, 2: 0.022, 3: 0.022, 4: 0.022, 5: 0.021,
+    6: 0.018, 7: 0.016, 8: 0.017, 9: 0.019, 10: 0.024, 11: 0.029,
+    12: 0.035, 13: 0.042, 14: 0.046, 15: 0.048, 16: 0.048, 17: 0.046,
+    18: 0.042, 19: 0.036, 20: 0.031, 21: 0.027, 22: 0.024, 23: 0.021
+  };
+
+  const monthlyMean = {
+    6: 0.035,
+    7: 0.026,
+    8: 0.025
+  };
+
+  const yearlyMean = {
+    2010: 0.021, 2011: 0.019, 2012: 0.023, 2013: 0.025,
+    2014: 0.027, 2015: 0.027, 2016: 0.027, 2017: 0.027,
+    2018: 0.027, 2019: 0.030, 2020: 0.029, 2021: 0.034,
+    2022: 0.031, 2023: 0.037, 2024: 0.041, 2025: 0.037
+  };
+
+  const inputs = document.querySelectorAll('[data-input]');
+  const o3Value = document.querySelector('#o3Value');
+  const o3Level = document.querySelector('#o3Level');
+  const o3Message = document.querySelector('#o3Message');
+  const o3Percent = document.querySelector('#o3Percent');
+  const o3Meter = document.querySelector('#o3Meter');
+  const meterText = document.querySelector('#meterText');
+  const effectList = document.querySelector('#effectList');
+  const resetBtn = document.querySelector('#resetPredictor');
+
+  const photoScore = document.querySelector('#photoScore');
+  const photoText = document.querySelector('#photoText');
+  const dispersionScore = document.querySelector('#dispersionScore');
+  const dispersionText = document.querySelector('#dispersionText');
+  const pollutionScore = document.querySelector('#pollutionScore');
+  const pollutionText = document.querySelector('#pollutionText');
+
+  function getInput(name) {
+    return document.querySelector(`[data-input="${name}"]`);
+  }
+
+  function getNumber(name) {
+    return Number(getInput(name).value);
+  }
+
+  function formatShown(name, value) {
+    const num = Number(value);
+
+    if (name === 'no2') return num.toFixed(3);
+    if (name === 'sunshine') return num.toFixed(2);
+    if (['temp', 'wind', 'solar', 'pressure'].includes(name)) return num.toFixed(1);
+
+    return String(Math.round(num));
+  }
+
+  function updateLabels() {
+    inputs.forEach((input) => {
+      const target = document.querySelector(`[data-value="${input.dataset.input}"]`);
+      if (target) {
+        target.textContent = formatShown(input.dataset.input, input.value);
+      }
+    });
+  }
+
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function localPredict() {
+    const temp = getNumber('temp');
+    const humidity = getNumber('humidity');
+    const no2 = getNumber('no2');
+    const pm25 = getNumber('pm25');
+    const pm10 = getNumber('pm10');
+    const wind = getNumber('wind');
+    const solar = getNumber('solar');
+    const sunshine = getNumber('sunshine');
+    const hour = Math.round(getNumber('hour'));
+    const pressure = getNumber('pressure');
+
+    const baseMean = 0.029;
+    const monthBase = (monthlyMean[FIXED_MONTH] - baseMean) * 0.65;
+    const yearBase = (yearlyMean[FIXED_YEAR] - baseMean) * 0.35;
+    const fixedBase = baseMean + monthBase + yearBase;
+
+    const effects = [
+      { name: '시간대', value: ((hourlyMean[hour] || baseMean) - baseMean) * 0.90 },
+      { name: '기온', value: (temp - 25.6) * 0.00115 },
+      { name: '습도', value: (humidity - 70.8) * -0.00042 },
+      { name: 'NO₂', value: (no2 - 0.026) * -0.16 },
+      { name: '먼지', value: (pm25 - 17) * 0.00011 + (pm10 - 32) * 0.000045 },
+      { name: '일사', value: (solar - 1.2) * 0.0062 + (sunshine - 0.55) * 0.010 },
+      { name: '풍속', value: (wind - 2.1) * -0.00038 },
+      { name: '기압', value: (pressure - 16.0) * -0.00017 }
+    ];
+
+    let estimate = fixedBase + effects.reduce((sum, item) => sum + item.value, 0);
+    estimate = clamp(estimate, 0.001, 0.18);
+
+    let level = '낮음';
+    let message = '현재 조건에서는 비교적 낮은 오존 농도로 추정됩니다.';
+
+    if (estimate >= 0.09) {
+      level = '매우 높음';
+      message = '고온,강한 일사 조건이 겹쳐 오존 농도가 매우 높게 추정됩니다.';
+    } else if (estimate >= 0.06) {
+      level = '높음';
+      message = '광합성 반응이 활발해지기 쉬운 조건으로 오존이 높아질 수 있습니다.';
+    } else if (estimate >= 0.03) {
+      level = '보통';
+      message = '일반적인 오존 범위에 가까운 조건입니다.';
+    }
+
+    return {
+      estimate,
+      level,
+      message,
+      effects,
+      raw: {
+        temp, humidity, no2, pm25, pm10, wind, solar, sunshine, hour, pressure
+      }
+    };
+  }
+
+  function renderEffects(effects) {
+    effectList.innerHTML = '';
+
+    effects.forEach((item) => {
+      const value = Number(item.value);
+      const width = Math.min(Math.abs(value) / 0.025 * 100, 100);
+      const sign = value >= 0 ? '+' : '';
+
+      const row = document.createElement('div');
+      row.className = 'effect-row';
+      row.innerHTML = `
+        <span class="effect-name">${item.name}</span>
+        <div class="effect-track">
+          <div class="effect-bar ${value < 0 ? 'minus' : ''}" style="--bar:${width}%"></div>
+        </div>
+        <span class="effect-value">${sign}${value.toFixed(4)}</span>
+      `;
+
+      effectList.appendChild(row);
+    });
+  }
+
+  function updateInsight(result) {
+    const { temp, humidity, no2, pm25, pm10, wind, solar, sunshine, hour } = result.raw;
+
+    const photochem = clamp(
+      ((temp - 15) / 20) * 35 +
+      (solar / 3.5) * 30 +
+      (sunshine / 1.0) * 20 +
+      ((hour >= 11 && hour <= 17) ? 15 : 5),
+      0, 100
+    );
+
+    const dispersion = clamp(
+      (wind / 10) * 60 +
+      ((100 - humidity) / 100) * 25 +
+      ((hour <= 9 || hour >= 19) ? 5 : 15),
+      0, 100
+    );
+
+    const pollution = clamp(
+      (no2 / 0.18) * 45 +
+      (pm25 / 100) * 30 +
+      (pm10 / 180) * 25,
+      0, 100
+    );
+
+    photoScore.textContent = Math.round(photochem);
+    dispersionScore.textContent = Math.round(dispersion);
+    pollutionScore.textContent = Math.round(pollution);
+
+    if (photochem >= 75) {
+      photoText.textContent = '기온과 일사 조건이 강해 광합성 반응이 매우 활발한 편입니다.';
+    } else if (photochem >= 45) {
+      photoText.textContent = '광합성 반응이 어느 정도 활발해질 수 있는 조건입니다.';
+    } else {
+      photoText.textContent = '광합성 반응이 상대적으로 강하지 않은 조건입니다.';
+    }
+
+    if (dispersion >= 70) {
+      dispersionText.textContent = '대기 확산이 비교적 잘 되어 오존 누적이 다소 완화될 수 있습니다.';
+    } else if (dispersion >= 40) {
+      dispersionText.textContent = '확산 조건이 보통 수준이라 입력 조건에 따라 농도가 달라질 수 있습니다.';
+    } else {
+      dispersionText.textContent = '대기 확산이 약해 오염물질이 머무르기 쉬운 편입니다.';
+    }
+
+    if (pollution >= 70) {
+      pollutionText.textContent = '전구물질과 입자상 오염의 영향이 큰 편으로 해석됩니다.';
+    } else if (pollution >= 40) {
+      pollutionText.textContent = '오염 전구물질의 영향이 어느 정도 존재합니다.';
+    } else {
+      pollutionText.textContent = '전구물질 영향은 상대적으로 크지 않은 편입니다.';
+    }
+  }
+
+  function updatePrediction() {
+    updateLabels();
+
+    const result = localPredict();
+    const estimate = result.estimate;
+    const meter = Math.min((estimate / 0.12) * 100, 100);
+
+    o3Value.textContent = `${estimate.toFixed(4)} ppm`;
+    o3Level.textContent = result.level;
+    o3Message.textContent = result.message;
+    o3Percent.textContent = (estimate * 100).toFixed(3);
+    o3Meter.style.setProperty('--meter', `${meter}%`);
+    meterText.textContent = `현재 입력값 기준 예상 농도는 ${estimate.toFixed(4)} ppm입니다.`;
+
+    renderEffects(result.effects);
+    updateInsight(result);
+  }
+
+  const PRESETS = {
+    morning: {
+      temp: 23.0,
+      humidity: 78,
+      no2: 0.035,
+      pm25: 19,
+      pm10: 34,
+      wind: 1.8,
+      solar: 0.7,
+      sunshine: 0.40,
+      hour: 8,
+      pressure: 16.5
+    },
+    afternoon: {
+      temp: 31.0,
+      humidity: 60,
+      no2: 0.020,
+      pm25: 15,
+      pm10: 28,
+      wind: 2.3,
+      solar: 1.8,
+      sunshine: 0.75,
+      hour: 15,
+      pressure: 15.8
+    },
+    hot_clear: {
+      temp: 36.0,
+      humidity: 48,
+      no2: 0.018,
+      pm25: 16,
+      pm10: 26,
+      wind: 1.6,
+      solar: 2.8,
+      sunshine: 0.92,
+      hour: 15,
+      pressure: 15.2
+    },
+    humid_cloudy: {
+      temp: 26.0,
+      humidity: 88,
+      no2: 0.028,
+      pm25: 18,
+      pm10: 30,
+      wind: 2.7,
+      solar: 0.5,
+      sunshine: 0.22,
+      hour: 14,
+      pressure: 17.2
+    },
+    polluted: {
+      temp: 30.0,
+      humidity: 67,
+      no2: 0.060,
+      pm25: 42,
+      pm10: 72,
+      wind: 1.4,
+      solar: 1.4,
+      sunshine: 0.60,
+      hour: 15,
+      pressure: 16.1
+    }
+  };
+
+  function applyValues(values) {
+    Object.entries(values).forEach(([key, value]) => {
+      const input = getInput(key);
+      if (input) input.value = value;
+    });
+
+    updatePrediction();
+  }
+
+  inputs.forEach((input) => {
+    input.addEventListener('input', updatePrediction);
+  });
+
+  resetBtn.addEventListener('click', () => {
+    applyValues(DEFAULTS);
+  });
+
+  document.querySelectorAll('[data-preset]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const key = button.dataset.preset;
+      if (PRESETS[key]) {
+        applyValues(PRESETS[key]);
+      }
+    });
+  });
+
+  updatePrediction();
+</script>
+
+{% endblock %}

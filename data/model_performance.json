@@ -1,0 +1,42 @@
+[
+  {
+    "model":"HistGradientBoosting Regression",
+    "sample_rows":50000,
+    "features_used":13,
+    "R2":0.7213623325,
+    "MAE":0.0084754685,
+    "RMSE":0.0112641512
+  },
+  {
+    "model":"Polynomial Ridge degree=2",
+    "sample_rows":50000,
+    "features_used":10,
+    "R2":0.6534878769,
+    "MAE":0.0095530421,
+    "RMSE":0.0125613922
+  },
+  {
+    "model":"Ridge Regression",
+    "sample_rows":50000,
+    "features_used":59,
+    "R2":0.5783971888,
+    "MAE":0.0106789931,
+    "RMSE":0.0138557586
+  },
+  {
+    "model":"Multiple Linear Regression",
+    "sample_rows":50000,
+    "features_used":59,
+    "R2":0.5783968263,
+    "MAE":0.0106791252,
+    "RMSE":0.0138557645
+  },
+  {
+    "model":"SGD ElasticNet Regression",
+    "sample_rows":50000,
+    "features_used":59,
+    "R2":0.5716831095,
+    "MAE":0.0107756349,
+    "RMSE":0.0139656502
+  }
+]
